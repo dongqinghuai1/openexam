@@ -1,0 +1,139 @@
+.schedule-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 30px;
+}
+
+.title {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+}
+
+.month-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+}
+
+.nav-btn {
+  font-size: 18px;
+  color: #667eea;
+  padding: 10px 20px;
+}
+
+.month {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.weekday {
+  display: flex;
+  background: white;
+  padding: 15px 10px;
+  margin: 0 20px;
+  border-radius: 8px 8px 0 0;
+}
+
+.weekday text {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.calendar {
+  display: flex;
+  flex-wrap: wrap;
+  background: white;
+  padding: 10px;
+  margin: 0 20px;
+  border-radius: 0 0 8px 8px;
+}
+
+.day {
+  width: 14.28%;
+  min-height: 60px;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.day.empty {
+  background: #f9f9f9;
+}
+
+.day-num {
+  font-size: 14px;
+  color: #333;
+}
+
+.day-schedule {
+  margin-top: 2px;
+}
+
+.schedule-dot {
+  display: block;
+  font-size: 10px;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 2px;
+  border-radius: 2px;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-list {
+  padding: 20px;
+}
+
+.list-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.schedule-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.schedule-card .time {
+  font-size: 14px;
+  color: #667eea;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.schedule-card .class-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.schedule-card .course-name {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.schedule-card .teacher {
+  font-size: 12px;
+  color: #999;
+  display: block;
+}
