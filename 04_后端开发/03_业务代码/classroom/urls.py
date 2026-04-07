@@ -6,7 +6,7 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r'rooms', MeetingRoomViewSet, basename='meeting-room')
+router.register(r'meeting_rooms', MeetingRoomViewSet, basename='meeting-room')
 router.register(r'records', MeetingRecordViewSet, basename='meeting-record')
 router.register(r'recordings', RecordingTaskViewSet, basename='recording-task')
 router.register(r'playbacks', PlaybackFileViewSet, basename='playback')

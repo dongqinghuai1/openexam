@@ -72,7 +72,7 @@ class UserSerializer(serializers.ModelSerializer):
             user.roles.set(roles)
         return user
 
-    def update(self, validated_data):
+    def update(self, instance, validated_data):
         role_ids = validated_data.pop('role_ids', None)
         password = validated_data.pop('password', None)
         for attr, value in validated_data.items():

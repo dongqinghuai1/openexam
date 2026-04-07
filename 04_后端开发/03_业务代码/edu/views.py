@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters import rest_framework as filters
 from .models import Subject, Course, Chapter, Section, CoursePackage, Student, Teacher, EduClass, ClassStudent, Schedule, RescheduleRecord, LeaveRecord, StudentHoursAccount, HoursFlow
+from . import serializers
 from .serializers import (
     SubjectSerializer, CourseListSerializer, CourseDetailSerializer, CourseCreateSerializer,
     CoursePackageSerializer, StudentSerializer, StudentCreateSerializer, TeacherSerializer,

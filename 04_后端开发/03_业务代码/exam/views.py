@@ -3,7 +3,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Question, Paper, Exam, ExamAnswer, ScoreRecord
 from .serializers import QuestionSerializer, PaperSerializer, ExamSerializer, ScoreRecordSerializer
-from edu.models import StudentHoursAccount
 
 
 class QuestionViewSet(viewsets.ModelViewSet):

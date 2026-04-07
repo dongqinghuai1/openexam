@@ -1,10 +1,10 @@
 <template>
-  <div class="student-page">
+  <div class="teacher-page">
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>学生管理</span>
-          <el-button type="primary" @click="handleAdd">新增学生</el-button>
+          <span>教师管理</span>
+          <el-button type="primary" @click="handleAdd">新增教师</el-button>
         </div>
       </template>
 
@@ -17,10 +17,8 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryForm.status" placeholder="请选择" clearable>
-            <el-option label="在读" value="active" />
-            <el-option label="休学" value="inactive" />
-            <el-option label="毕业" value="graduated" />
-            <el-option label="退学" value="withdrawn" />
+            <el-option label="在职" value="active" />
+            <el-option label="离职" value="resigned" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -35,13 +33,17 @@
         <el-table-column prop="gender" label="性别" width="60">
           <template #default="{ row }">{{ row.gender === 'male' ? '男' : row.gender === 'female' ? '女' : '-' }}</template>
         </el-table-column>
-        <el-table-column prop="grade" label="年级" width="80" />
-        <el-table-column prop="school" label="学校" />
-        <el-table-column prop="parent_name" label="家长姓名" width="100" />
-        <el-table-column prop="parent_phone" label="家长手机" width="120" />
+        <el-table-column prop="education" label="学历" width="80" />
+        <el-table-column prop="major" label="专业" />
+        <el-table-column prop="subjects" label="擅长科目">
+          <template #default="{ row }">
+            <el-tag v-for="sub in row.subjects" :key="sub.id" size="small" style="margin-right: 5px">{{ sub.name }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="class_count" label="班级数" width="80" />
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
+            <el-tag :type="row.status === 'active' ? 'success' : 'danger'">{{ row.status === 'active' ? '在职' : '离职' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
@@ -82,28 +84,34 @@
         <el-form-item label="出生日期" prop="birthday">
           <el-date-picker v-model="form.birthday" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
-        <el-form-item label="年级" prop="grade">
-          <el-input v-model="form.grade" />
+        <el-form-item label="学历" prop="education">
+          <el-input v-model="form.education" />
         </el-form-item>
-        <el-form-item label="学校">
-          <el-input v-model="form.school" />
+        <el-form-item label="专业" prop="major">
+          <el-input v-model="form.major" />
         </el-form-item>
-        <el-form-item label="家长姓名" prop="parent_name">
-          <el-input v-model="form.parent_name" />
+        <el-form-item label="证书">
+          <el-input v-model="form.certification" />
         </el-form-item>
-        <el-form-item label="家长手机" prop="parent_phone">
-          <el-input v-model="form.parent_phone" />
+        <el-form-item label="擅长科目" prop="subject_ids">
+          <el-select v-model="form.subject_ids" multiple placeholder="请选择">
+            <el-option v-for="sub in subjects" :key="sub.id" :label="sub.name" :value="sub.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="薪资类型">
+          <el-radio-group v-model="form.salary_type">
+            <el-radio label="hourly">按课时</el-radio>
+            <el-radio label="fixed">固定工资</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="入职日期" prop="hire_date">
+          <el-date-picker v-model="form.hire_date" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="form.status">
-            <el-option label="在读" value="active" />
-            <el-option label="休学" value="inactive" />
-            <el-option label="毕业" value="graduated" />
-            <el-option label="退学" value="withdrawn" />
+            <el-option label="在职" value="active" />
+            <el-option label="离职" value="resigned" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="入学日期" prop="enrollment_date">
-          <el-date-picker v-model="form.enrollment_date" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -121,40 +129,30 @@ import { api } from '../../stores/user'
 
 const loading = ref(false)
 const tableData = ref([])
+const subjects = ref([])
 const dialogVisible = ref(false)
-const dialogTitle = ref('新增学生')
+const dialogTitle = ref('新增教师')
 const formRef = ref()
 
 const queryForm = reactive({ name: '', phone: '', status: '' })
 const pagination = reactive({ page: 1, size: 10, total: 0 })
 const form = reactive({
-  id: null, name: '', phone: '', gender: 'male', birthday: '', grade: '', school: '',
-  parent_name: '', parent_phone: '', status: 'active', enrollment_date: ''
+  id: null, name: '', phone: '', gender: 'male', birthday: '', education: '', major: '',
+  certification: '', subject_ids: [], salary_type: 'hourly', hire_date: '', status: 'active'
 })
 
 const rules = {
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
   phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
-  parent_name: [{ required: true, message: '请输入家长姓名', trigger: 'blur' }],
-  parent_phone: [{ required: true, message: '请输入家长手机', trigger: 'blur' }],
-  grade: [{ required: true, message: '请输入年级', trigger: 'blur' }],
-  enrollment_date: [{ required: true, message: '请选择入学日期', trigger: 'change' }]
-}
-
-function getStatusType(status) {
-  const map = { active: 'success', inactive: 'warning', graduated: 'info', withdrawn: 'danger' }
-  return map[status] || 'info'
-}
-
-function getStatusText(status) {
-  const map = { active: '在读', inactive: '休学', graduated: '毕业', withdrawn: '退学' }
-  return map[status] || status
+  education: [{ required: true, message: '请输入学历', trigger: 'blur' }],
+  major: [{ required: true, message: '请输入专业', trigger: 'blur' }],
+  hire_date: [{ required: true, message: '请选择入职日期', trigger: 'change' }]
 }
 
 async function fetchData() {
   loading.value = true
   try {
-    const res = await api.get('/edu/students/', { params: { ...queryForm, page: pagination.page, page_size: pagination.size } })
+    const res = await api.get('/edu/teachers/', { params: { ...queryForm, page: pagination.page, page_size: pagination.size } })
     tableData.value = res.data.results || res.data
     pagination.total = res.data.count || tableData.value.length
   } catch (e) {
@@ -164,29 +162,35 @@ async function fetchData() {
   }
 }
 
+async function fetchSubjects() {
+  try {
+    const res = await api.get('/edu/subjects/')
+    subjects.value = res.data.results || res.data
+  } catch (e) { console.error(e) }
+}
+
 function handleQuery() { pagination.page = 1; fetchData() }
 function handleReset() { Object.assign(queryForm, { name: '', phone: '', status: '' }); handleQuery() }
 
 function handleAdd() {
-  dialogTitle.value = '新增学生'
-  Object.assign(form, { id: null, name: '', phone: '', gender: 'male', birthday: '', grade: '', school: '', parent_name: '', parent_phone: '', status: 'active', enrollment_date: '' })
+  dialogTitle.value = '新增教师'
+  Object.assign(form, { id: null, name: '', phone: '', gender: 'male', birthday: '', education: '', major: '', certification: '', subject_ids: [], salary_type: 'hourly', hire_date: '', status: 'active' })
   dialogVisible.value = true
 }
 
 function handleEdit(row) {
-  dialogTitle.value = '编辑学生'
-  Object.assign(form, { ...row })
+  dialogTitle.value = '编辑教师'
+  form.subject_ids = row.subjects?.map(s => s.id) || []
+  Object.assign(form, { ...row, subject_ids: form.subject_ids })
   dialogVisible.value = true
 }
 
-function handleView(row) {
-  ElMessage.info('查看详情: ' + row.name)
-}
+function handleView(row) { ElMessage.info('查看详情: ' + row.name) }
 
 async function handleDelete(row) {
   try {
-    await ElMessageBox.confirm(`确定删除学生 "${row.name}" 吗？`, '提示', { type: 'warning' })
-    await api.delete(`/edu/students/${row.id}/`)
+    await ElMessageBox.confirm(`确定删除教师 "${row.name}" 吗？`, '提示', { type: 'warning' })
+    await api.delete(`/edu/teachers/${row.id}/`)
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) { if (e !== 'cancel') ElMessage.error('删除失败') }
@@ -198,10 +202,10 @@ async function handleSubmit() {
     if (valid) {
       try {
         if (form.id) {
-          await api.put(`/edu/students/${form.id}/`, form)
+          await api.put(`/edu/teachers/${form.id}/`, form)
           ElMessage.success('更新成功')
         } else {
-          await api.post('/edu/students/', form)
+          await api.post('/edu/teachers/', form)
           ElMessage.success('创建成功')
         }
         dialogVisible.value = false
@@ -211,11 +215,11 @@ async function handleSubmit() {
   })
 }
 
-onMounted(() => { fetchData() })
+onMounted(() => { fetchData(); fetchSubjects() })
 </script>
 
 <style scoped>
-.student-page { padding: 20px; }
+.teacher-page { padding: 20px; }
 .card-header { display: flex; justify-content: space-between; align-items: center; }
 .search-form { margin-bottom: 20px; }
 </style>
