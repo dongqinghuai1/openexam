@@ -1,23 +1,13 @@
-<template>
-  <view class="app">
-    <slot />
-  </view>
-</template>
+import { Component, ReactNode } from 'react'
+import { useLaunch } from '@tarojs/taro'
+import './app.scss'
 
-<script setup>
-import { onLaunch } from '@tarojs/taro'
+function App({ children }: { children: ReactNode }) {
+  useLaunch(() => {
+    console.log('App launched.')
+  })
 
-onLaunch(() => {
-  console.log('App launched.')
-})
-</script>
-
-<style>
-page {
-  background-color: #f5f5f5;
+  return children
 }
 
-.app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-</style>
+export default App

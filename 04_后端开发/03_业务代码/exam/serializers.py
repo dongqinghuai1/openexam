@@ -33,8 +33,23 @@ class ExamSerializer(serializers.ModelSerializer):
 
 
 class ScoreRecordSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+
     class Meta:
         model = ScoreRecord
+        fields = '__all__'
+
+    def get_student_name(self, obj):
+        from edu.models import Student
+        try:
+            return Student.objects.get(id=obj.student_id).name
+        except:
+            return None
+
+
+class ExamAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamAnswer
         fields = '__all__'
 
 
