@@ -1,0 +1,64 @@
+.recordings-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 30px;
+}
+
+.title {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+}
+
+.content {
+  padding: 20px;
+}
+
+.recording-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.class-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.course-name {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.date, .duration {
+  font-size: 12px;
+  color: #999;
+}
+
+.play-btn {
+  background: #667eea;
+  color: white;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}
