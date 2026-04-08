@@ -78,7 +78,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { api } from '../../stores/user'
+import { api } from '@/stores/user'
 import * as echarts from 'echarts'
 
 const stats = ref({

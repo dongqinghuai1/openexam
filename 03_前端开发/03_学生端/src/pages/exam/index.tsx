@@ -5,10 +5,10 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Exam() {
-  const [exams, setExams] = useState<any[]>([])
-  const [currentExam, setCurrentExam] = useState<any>(null)
+  const [exams, setExams] = useState([])
+  const [currentExam, setCurrentExam] = useState(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers] = useState<any>({})
+  const [answers, setAnswers] = useState({})
 
   useEffect(() => {
     fetchExams()
@@ -21,13 +21,13 @@ export default function Exam() {
     } catch (e) { console.error(e) }
   }
 
-  const startExam = (exam: any) => {
+  const startExam = (exam) => {
     setCurrentExam(exam)
     setCurrentQuestion(0)
     setAnswers({})
   }
 
-  const submitAnswer = (answer: string) => {
+  const submitAnswer = (answer) => {
     setAnswers({ ...answers, [currentQuestion]: answer })
   }
 
@@ -59,7 +59,7 @@ export default function Exam() {
           <Text className="q-title">第{currentQuestion + 1}题</Text>
           <Text className="q-content">{question?.content}</Text>
           <RadioGroup onChange={(e) => submitAnswer(e.detail.value)}>
-            {question?.options?.map((opt: any, idx: number) => (
+            {question?.options?.map((opt, idx) => (
               <View className="option" key={idx}>
                 <Radio value={opt.key} checked={answers[currentQuestion] === opt.key} />
                 <Text className="opt-text">{opt.key}. {opt.value}</Text>
@@ -83,7 +83,7 @@ export default function Exam() {
       <View className="section">
         <Text className="section-title">可参加的考试</Text>
         {exams.length > 0 ? (
-          exams.map((exam: any, index: number) => (
+          exams.map((exam, index) => (
             <View className="exam-card" key={index}>
               <View className="exam-name">{exam.name}</View>
               <View className="exam-info">

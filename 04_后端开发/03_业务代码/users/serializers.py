@@ -16,8 +16,13 @@ class MenuSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'path', 'component', 'icon', 'parent', 'sort', 'visible', 'permission', 'children']
 
     def get_children(self, obj):
-        children = obj.children.filter(visible=True)
-        return MenuSerializer(children, many=True).data
+        try:
+            children = obj.children.filter(visible=True).order_by('sort')
+            if not children.exists():
+                return []
+            return MenuSerializer(children, many=True).data
+        except Exception:
+            return []
 
 
 class RoleSerializer(serializers.ModelSerializer):

@@ -5,7 +5,7 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Schedule() {
-  const [schedules, setSchedules] = useState<any[]>([])
+  const [schedules, setSchedules] = useState([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
 
   const fetchSchedules = async () => {
@@ -15,11 +15,11 @@ export default function Schedule() {
     } catch (e) { console.error(e) }
   }
 
-  const handleStartClass = (schedule: any) => {
-    Taro.navigateTo({ url: `/pages/classroom/index?id=${schedule.id}` })
+  const handleStartClass = (schedule) => {
+    Taro.showToast({ title: `课堂功能开发中: ${schedule.id}`, icon: 'none' })
   }
 
-  const todaySchedule = schedules.filter((s: any) => s.status === 'scheduled')
+  const todaySchedule = schedules.filter((s) => s.status === 'scheduled')
 
   return (
     <View className="schedule-page">
@@ -31,7 +31,7 @@ export default function Schedule() {
       <View className="section">
         <Text className="section-title">今日课程 ({todaySchedule.length}节)</Text>
         {todaySchedule.length > 0 ? (
-          todaySchedule.map((item: any, index: number) => (
+          todaySchedule.map((item, index) => (
             <View className="schedule-card" key={index}>
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>

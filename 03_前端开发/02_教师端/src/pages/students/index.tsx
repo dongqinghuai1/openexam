@@ -5,7 +5,7 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Students() {
-  const [students, setStudents] = useState<any[]>([])
+  const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function Students() {
     }
   }
 
-  const handleViewDetail = (student: any) => {
+  const handleViewDetail = (student) => {
     Taro.showModal({
       title: student.name,
       content: `手机: ${student.phone}\n年级: ${student.grade}\n学校: ${student.school}`,
@@ -41,7 +41,7 @@ export default function Students() {
 
       <View className="content">
         {students.length > 0 ? (
-          students.map((student: any, index: number) => (
+          students.map((student, index) => (
             <View className="student-card" key={index} onClick={() => handleViewDetail(student)}>
               <View className="avatar">{student.name?.charAt(0) || 'S'}</View>
               <View className="info">

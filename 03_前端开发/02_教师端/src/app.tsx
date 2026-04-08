@@ -1,13 +1,12 @@
-import { Component, ReactNode } from 'react'
 import { useLaunch } from '@tarojs/taro'
 import './app.scss'
 
-function App({ children }: { children: ReactNode }) {
+function App(props) {
   useLaunch(() => {
     console.log('App launched.')
   })
 
-  return children
+  return props.children
 }
 
 export default App

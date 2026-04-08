@@ -5,9 +5,9 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Index() {
-  const [userInfo, setUserInfo] = useState<any>(null)
-  const [schedules, setSchedules] = useState<any[]>([])
-  const [hoursAccounts, setHoursAccounts] = useState<any[]>([])
+  const [userInfo, setUserInfo] = useState(null)
+  const [schedules, setSchedules] = useState([])
+  const [hoursAccounts, setHoursAccounts] = useState([])
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
@@ -40,11 +40,11 @@ export default function Index() {
     Taro.redirectTo({ url: '/pages/login/index' })
   }
 
-  const handleJoinClass = (schedule: any) => {
-    Taro.navigateTo({ url: `/pages/classroom/index?id=${schedule.id}` })
+  const handleJoinClass = (schedule) => {
+    Taro.showToast({ title: `课堂功能开发中: ${schedule.id}`, icon: 'none' })
   }
 
-  const totalHours = hoursAccounts.reduce((sum: number, acc: any) => sum + (acc.total_hours - acc.used_hours), 0)
+  const totalHours = hoursAccounts.reduce((sum, acc) => sum + (acc.total_hours - acc.used_hours), 0)
 
   return (
     <View className="index">
@@ -63,7 +63,7 @@ export default function Index() {
       <View className="section">
         <Text className="section-title">今日课程</Text>
         {schedules.length > 0 ? (
-          schedules.map((item: any, index: number) => (
+          schedules.map((item, index) => (
             <View className="schedule-card" key={index}>
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>

@@ -1,7 +1,8 @@
-const path = require('path')
-
 module.exports = {
   projectName: 'edu-classroom',
+  sourceRoot: 'src',
+  outputRoot: 'dist',
+  compiler: 'webpack5',
   designWidth: 750,
   deviceRatio: {
     '640': 2 / 2,
@@ -10,9 +11,6 @@ module.exports = {
   },
   plugins: [],
   framework: 'react',
-  sass: {
-    resource: path.resolve(__dirname, 'src/styles/variables.scss')
-  },
   mini: {
     postcss: {
       pxtransform: {

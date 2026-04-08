@@ -5,7 +5,7 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Recordings() {
-  const [recordings, setRecordings] = useState<any[]>([])
+  const [recordings, setRecordings] = useState([])
 
   useEffect(() => {
     fetchRecordings()
@@ -18,13 +18,13 @@ export default function Recordings() {
     } catch (e) { console.error(e) }
   }
 
-  const handlePlay = (url: string) => {
+  const handlePlay = (url) => {
     if (url) {
       Taro.navigateTo({ url: `/pages/webview/index?url=${encodeURIComponent(url)}` })
     }
   }
 
-  const formatDuration = (seconds: number) => {
+  const formatDuration = (seconds) => {
     if (!seconds) return '0:00'
     const minutes = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -39,7 +39,7 @@ export default function Recordings() {
 
       <View className="content">
         {recordings.length > 0 ? (
-          recordings.map((item: any, index: number) => (
+          recordings.map((item, index) => (
             <View className="recording-card" key={index}>
               <View className="class-name">{item.recording_task_class}</View>
               <View className="course-name">{item.recording_task_course}</View>

@@ -8,11 +8,10 @@
         </div>
       </template>
 
-      <el-table :data="tableData" v-loading="loading" row-key="id" default-expand-all stripe>
-        <el-table-column prop="name" label="菜单名称" width="150" />
-        <el-table-column prop="icon" label="图标" width="80">
+      <el-table :data="tableData" v-loading="loading" row-key="id" stripe>
+        <el-table-column prop="name" label="菜单名称" width="200">
           <template #default="{ row }">
-            <el-icon v-if="row.icon"><component :is="row.icon" /></el-icon>
+            <span :style="{ paddingLeft: (row._level || 0) * 20 + 'px' }">{{ row.name }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="path" label="路由" width="150" />
@@ -41,11 +40,11 @@
         </el-form-item>
         <el-form-item label="父级菜单">
           <el-select v-model="form.parent" placeholder="顶级菜单" clearable>
-            <el-option v-for="menu in tableData" :key="menu.id" :label="menu.name" :value="menu.id" />
+            <el-option v-for="menu in allMenus" :key="menu.id" :label="menu.label" :value="menu.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="图标">
-          <el-input v-model="form.icon" placeholder="请输入图标名称" />
+          <el-input v-model="form.icon" placeholder="图标名称" />
         </el-form-item>
         <el-form-item label="路由路径">
           <el-input v-model="form.path" />
@@ -74,46 +73,93 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { api } from '../../stores/user'
+import { api } from '@/stores/user'
 
 const loading = ref(false)
 const tableData = ref([])
+const allMenus = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('新增菜单')
 const formRef = ref()
 
 const form = reactive({
-  id: null, name: '', parent: null, icon: '', path: '', component: '', sort: 0, visible: true, permission: ''
+  id: null, name: '', parent: undefined, icon: '', path: '', component: '', sort: 0, visible: true, permission: ''
 })
 
 const rules = {
   name: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }]
 }
 
+function flattenTree(menus, level = 0) {
+  let result = []
+  for (const menu of menus) {
+    result.push({ ...menu, _level: level })
+    if (menu.children && menu.children.length > 0) {
+      result = result.concat(flattenTree(menu.children, level + 1))
+    }
+  }
+  return result
+}
+
+function flattenForSelect(menus, prefix = '') {
+  let result = []
+  for (const menu of menus) {
+    const label = prefix ? `${prefix} / ${menu.name}` : menu.name
+    result.push({ id: menu.id, label })
+    if (menu.children && menu.children.length > 0) {
+      result = result.concat(flattenForSelect(menu.children, label))
+    }
+  }
+  return result
+}
+
 async function fetchData() {
   loading.value = true
   try {
-    const res = await api.get('/users/menus/')
-    tableData.value = res.data.results || res.data
+    const res = await api.get('/users/menus/tree/')
+    const treeData = res.data
+    tableData.value = flattenTree(treeData)
+    allMenus.value = flattenForSelect(treeData)
   } catch (e) { ElMessage.error('获取数据失败') }
   finally { loading.value = false }
 }
 
+function resetForm() {
+  form.id = null
+  form.name = ''
+  form.parent = undefined
+  form.icon = ''
+  form.path = ''
+  form.component = ''
+  form.sort = 0
+  form.visible = true
+  form.permission = ''
+}
+
 function handleAdd() {
   dialogTitle.value = '新增菜单'
-  Object.assign(form, { id: null, name: '', parent: null, icon: '', path: '', component: '', sort: 0, visible: true, permission: '' })
+  resetForm()
   dialogVisible.value = true
 }
 
 function handleEdit(row) {
   dialogTitle.value = '编辑菜单'
-  Object.assign(form, { ...row, parent: row.parent?.id || row.parent })
+  form.id = row.id
+  form.name = row.name
+  form.parent = row.parent || undefined
+  form.icon = row.icon || ''
+  form.path = row.path || ''
+  form.component = row.component || ''
+  form.sort = row.sort
+  form.visible = row.visible
+  form.permission = row.permission || ''
   dialogVisible.value = true
 }
 
 function handleAddChild(row) {
   dialogTitle.value = '添加子菜单'
-  Object.assign(form, { id: null, name: '', parent: row.id, icon: '', path: '', component: '', sort: 0, visible: true, permission: '' })
+  resetForm()
+  form.parent = row.id
   dialogVisible.value = true
 }
 
@@ -131,11 +177,22 @@ async function handleSubmit() {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        const data = {
+          name: form.name,
+          parent: form.parent,
+          icon: form.icon || '',
+          path: form.path || '',
+          component: form.component || '',
+          sort: form.sort,
+          visible: form.visible,
+          permission: form.permission || ''
+        }
+
         if (form.id) {
-          await api.put(`/users/menus/${form.id}/`, form)
+          await api.put(`/users/menus/${form.id}/`, data)
           ElMessage.success('更新成功')
         } else {
-          await api.post('/users/menus/', form)
+          await api.post('/users/menus/', data)
           ElMessage.success('创建成功')
         }
         dialogVisible.value = false

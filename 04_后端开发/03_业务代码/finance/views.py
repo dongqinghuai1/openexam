@@ -60,10 +60,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
 
-        queryset = self.get_queryset().filter(
-            status='paid',
-            paid_at__range=[start_date, end_date]
-        )
+        queryset = self.get_queryset().filter(status='paid')
+
+        if start_date and end_date:
+            queryset = queryset.filter(paid_at__range=[start_date, end_date])
 
         total = queryset.aggregate(total=Sum('final_amount'))['total'] or 0
         count = queryset.count()

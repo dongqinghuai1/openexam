@@ -1,0 +1,56 @@
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:14
+    container_name: eduadmin-postgres
+    environment:
+      POSTGRES_DB: eduadmin
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: eduadmin-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # Django后端
+  backend:
+    build:
+      context: ./04_后端开发/03_业务代码
+      dockerfile: Dockerfile
+    container_name: eduadmin-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=eduadmin
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # Vue3前端
+  frontend:
+    build:
+      context: ./03_前端开发/01_管理后台
+      dockerfile: Dockerfile
+    container_name: eduadmin-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

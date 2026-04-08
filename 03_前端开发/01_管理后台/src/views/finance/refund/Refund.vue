@@ -66,7 +66,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { api } from '../../stores/user'
+import { api } from '@/stores/user'
 
 const loading = ref(false)
 const tableData = ref([])

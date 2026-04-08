@@ -5,8 +5,8 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Index() {
-  const [userInfo, setUserInfo] = useState<any>(null)
-  const [schedules, setSchedules] = useState<any[]>([])
+  const [userInfo, setUserInfo] = useState(null)
+  const [schedules, setSchedules] = useState([])
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
@@ -33,8 +33,12 @@ export default function Index() {
     Taro.redirectTo({ url: '/pages/login/index' })
   }
 
-  const handleStartClass = (schedule: any) => {
-    Taro.navigateTo({ url: `/pages/classroom/index?id=${schedule.id}` })
+  const handleStartClass = (schedule) => {
+    Taro.showToast({ title: `课堂功能开发中: ${schedule.id}`, icon: 'none' })
+  }
+
+  const handleProfile = () => {
+    Taro.showToast({ title: '个人中心开发中', icon: 'none' })
   }
 
   return (
@@ -47,8 +51,8 @@ export default function Index() {
 
       <View className="section">
         <Text className="section-title">今日课程</Text>
-        {schedules.length > 0 ? (
-          schedules.map((item: any, index: number) => (
+          {schedules.length > 0 ? (
+          schedules.map((item, index) => (
             <View className="schedule-card" key={index}>
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>
@@ -76,7 +80,7 @@ export default function Index() {
             <Text className="icon">📹</Text>
             <Text className="label">录屏回放</Text>
           </View>
-          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/profile/index' })}>
+          <View className="menu-item" onClick={handleProfile}>
             <Text className="icon">👤</Text>
             <Text className="label">个人中心</Text>
           </View>

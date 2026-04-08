@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 import './index.scss'
 
 export default function Schedule() {
-  const [schedules, setSchedules] = useState<any[]>([])
+  const [schedules, setSchedules] = useState([])
   const [currentDate, setCurrentDate] = useState(dayjs())
 
   useEffect(() => {
@@ -61,12 +61,12 @@ export default function Schedule() {
       </View>
 
       <View className="calendar">
-        {getDaysInMonth().map((item: any, index: number) => (
+        {getDaysInMonth().map((item, index) => (
           <View className={`day ${item.empty ? 'empty' : ''}`} key={index}>
             <Text className="day-num">{item.day}</Text>
             {item.schedules?.length > 0 && (
               <View className="day-schedule">
-                {item.schedules.slice(0, 2).map((s: any, i: number) => (
+                {item.schedules.slice(0, 2).map((s, i) => (
                   <Text className="schedule-dot" key={i}>{s.course_name}</Text>
                 ))}
               </View>
@@ -79,7 +79,7 @@ export default function Schedule() {
         <Text className="list-title">当日课程</Text>
         {schedules
           .filter(s => s.date === dayjs().format('YYYY-MM-DD'))
-          .map((item: any, index: number) => (
+          .map((item, index) => (
             <View className="schedule-card" key={index}>
               <Text className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</Text>
               <Text className="class-name">{item.class_name}</Text>

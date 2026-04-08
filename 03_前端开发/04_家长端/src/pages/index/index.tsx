@@ -5,9 +5,9 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Index() {
-  const [userInfo, setUserInfo] = useState<any>(null)
-  const [children, setChildren] = useState<any[]>([])
-  const [schedules, setSchedules] = useState<any[]>([])
+  const [userInfo, setUserInfo] = useState(null)
+  const [children, setChildren] = useState([])
+  const [schedules, setSchedules] = useState([])
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
@@ -40,8 +40,12 @@ export default function Index() {
     Taro.redirectTo({ url: '/pages/login/index' })
   }
 
-  const childSchedules = schedules.filter((s: any) => 
-    children.some((c: any) => c.id === s.student_id)
+  const handlePlaceholder = (name) => {
+    Taro.showToast({ title: `${name}开发中`, icon: 'none' })
+  }
+
+  const childSchedules = schedules.filter((s) => 
+    children.some((c) => c.id === s.student_id)
   )
 
   return (
@@ -55,7 +59,7 @@ export default function Index() {
       <View className="section">
         <Text className="section-title">我的孩子</Text>
         {children.length > 0 ? (
-          children.map((child: any, index: number) => (
+          children.map((child, index) => (
             <View className="child-card" key={index}>
               <Text className="name">{child.name}</Text>
               <Text className="info">年级: {child.grade} | 学校: {child.school}</Text>
@@ -69,7 +73,7 @@ export default function Index() {
       <View className="section">
         <Text className="section-title">今日课程</Text>
         {childSchedules.length > 0 ? (
-          childSchedules.map((item: any, index: number) => (
+          childSchedules.map((item, index) => (
             <View className="schedule-card" key={index}>
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>
@@ -84,11 +88,11 @@ export default function Index() {
       <View className="section">
         <Text className="section-title">快捷功能</Text>
         <View className="menu-grid">
-          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/children/index' })}>
+          <View className="menu-item" onClick={() => handlePlaceholder('孩子管理')}>
             <Text className="icon">👶</Text>
             <Text className="label">孩子管理</Text>
           </View>
-          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/schedule/index' })}>
+          <View className="menu-item" onClick={() => handlePlaceholder('课程日历')}>
             <Text className="icon">📅</Text>
             <Text className="label">课程日历</Text>
           </View>
@@ -96,7 +100,7 @@ export default function Index() {
             <Text className="icon">📊</Text>
             <Text className="label">成绩查询</Text>
           </View>
-          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/recordings/index' })}>
+          <View className="menu-item" onClick={() => handlePlaceholder('录屏回放')}>
             <Text className="icon">📹</Text>
             <Text className="label">录屏回放</Text>
           </View>

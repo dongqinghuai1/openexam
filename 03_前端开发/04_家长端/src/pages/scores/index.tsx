@@ -5,9 +5,9 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Scores() {
-  const [children, setChildren] = useState<any[]>([])
-  const [selectedChild, setSelectedChild] = useState<any>(null)
-  const [scores, setScores] = useState<any[]>([])
+  const [children, setChildren] = useState([])
+  const [selectedChild, setSelectedChild] = useState(null)
+  const [scores, setScores] = useState([])
 
   useEffect(() => {
     fetchChildren()
@@ -25,19 +25,19 @@ export default function Scores() {
     } catch (e) { console.error(e) }
   }
 
-  const fetchScores = async (studentId: number) => {
+  const fetchScores = async (studentId) => {
     try {
       const res = await api.get('/exam/scores/', { student_id: studentId })
       setScores(res.data?.results || res.data || [])
     } catch (e) { console.error(e) }
   }
 
-  const handleChildChange = (child: any) => {
+  const handleChildChange = (child) => {
     setSelectedChild(child)
     fetchScores(child.id)
   }
 
-  const getScoreLevel = (score: number, total: number) => {
+  const getScoreLevel = (score, total) => {
     const percent = (score / total) * 100
     if (percent >= 90) return 'A'
     if (percent >= 80) return 'B'
@@ -54,7 +54,7 @@ export default function Scores() {
 
       {children.length > 1 && (
         <View className="child-selector">
-          {children.map((child: any) => (
+          {children.map((child) => (
             <View 
               key={child.id} 
               className={`child-tag ${selectedChild?.id === child.id ? 'active' : ''}`}
@@ -68,7 +68,7 @@ export default function Scores() {
 
       <View className="content">
         {scores.length > 0 ? (
-          scores.map((item: any, index: number) => (
+          scores.map((item, index) => (
             <View className="score-card" key={index}>
               <View className="exam-name">{item.exam?.name || '考试'}</View>
               <View className="score-info">

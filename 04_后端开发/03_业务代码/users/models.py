@@ -9,6 +9,7 @@ class User(AbstractUser):
     gender = models.CharField(max_length=10, choices=[('male', '男'), ('female', '女')], verbose_name='性别', null=True, blank=True)
     birthday = models.DateField(verbose_name='生日', null=True, blank=True)
     status = models.CharField(max_length=20, default='active', choices=[('active', '启用'), ('inactive', '禁用')], verbose_name='状态')
+    roles = models.ManyToManyField('Role', verbose_name='角色', related_name='users', through='UserRole')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
@@ -77,6 +78,9 @@ class Menu(models.Model):
         verbose_name = '菜单'
         verbose_name_plural = verbose_name
         ordering = ['sort', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'parent'], name='unique_name_per_parent')
+        ]
 
     def __str__(self):
         return self.name

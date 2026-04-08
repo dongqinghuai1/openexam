@@ -1,3 +1,4 @@
+from datetime import date
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -5,7 +6,8 @@ from django_filters import rest_framework as filters
 from .models import Subject, Course, Chapter, Section, CoursePackage, Student, Teacher, EduClass, ClassStudent, Schedule, RescheduleRecord, LeaveRecord, StudentHoursAccount, HoursFlow
 from . import serializers
 from .serializers import (
-    SubjectSerializer, CourseListSerializer, CourseDetailSerializer, CourseCreateSerializer,
+    SubjectSerializer, ChapterSerializer, SectionSerializer,
+    CourseListSerializer, CourseDetailSerializer, CourseCreateSerializer,
     CoursePackageSerializer, StudentSerializer, StudentCreateSerializer, TeacherSerializer,
     EduClassListSerializer, EduClassDetailSerializer, ClassStudentSerializer,
     ScheduleSerializer, RescheduleRecordSerializer, LeaveRecordSerializer,
@@ -39,7 +41,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 class ChapterViewSet(viewsets.ModelViewSet):
     """章节管理视图"""
     queryset = Chapter.objects.all()
-    serializer_class = serializers.Serializer
+    serializer_class = ChapterSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['course']
 
