@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 class Subject(models.Model):
@@ -171,6 +173,19 @@ class EduClass(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            base = timezone.now().strftime('CLS%y%m%d%H%M%S')
+            candidate = base
+            index = 1
+            while EduClass.objects.filter(code=candidate).exclude(pk=self.pk).exists():
+                candidate = f'{base}{index:02d}'
+                index += 1
+            self.code = candidate
+        if self.end_date and self.start_date and self.end_date < self.start_date:
+            raise ValidationError({'end_date': '结课日期不能早于开班日期'})
+        super().save(*args, **kwargs)
 
 
 class ClassStudent(models.Model):

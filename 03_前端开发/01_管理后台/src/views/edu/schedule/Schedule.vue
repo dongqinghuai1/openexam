@@ -116,6 +116,33 @@
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="rescheduleDialogVisible" title="调课申请" width="600px">
+      <el-form ref="rescheduleFormRef" :model="rescheduleForm" :rules="rescheduleRules" label-width="100px">
+        <el-form-item label="原课次">
+          <el-input :model-value="currentScheduleLabel" disabled />
+        </el-form-item>
+        <el-form-item label="调课类型" prop="type">
+          <el-select v-model="rescheduleForm.type" placeholder="请选择">
+            <el-option label="调课" value="adjust" />
+            <el-option label="补课" value="reschedule" />
+            <el-option label="代课" value="supplement" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="新课次" prop="new_schedule_id">
+          <el-select v-model="rescheduleForm.new_schedule_id" placeholder="请选择新课次" clearable filterable>
+            <el-option v-for="item in scheduleOptions" :key="item.id" :label="`${item.date} ${item.start_time?.slice(0,5)} ${item.class_name || ''}`" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="原因" prop="reason">
+          <el-input v-model="rescheduleForm.reason" type="textarea" :rows="3" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="rescheduleDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitReschedule">提交</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -133,13 +160,18 @@ const courses = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('新建排课')
 const formRef = ref()
+const rescheduleDialogVisible = ref(false)
+const rescheduleFormRef = ref()
 const calendarDate = ref(new Date())
+const scheduleOptions = ref([])
+const currentSchedule = ref(null)
 
 const queryForm = reactive({ edu_class: '', teacher: '', date: '' })
 const pagination = reactive({ page: 1, size: 10, total: 0 })
 const form = reactive({
   id: null, edu_class: null, course: null, teacher: null, date: '', start_time: '', end_time: '', room: '', note: ''
 })
+const rescheduleForm = reactive({ original_schedule_id: null, new_schedule_id: null, type: 'adjust', reason: '' })
 
 const rules = {
   edu_class: [{ required: true, message: '请选择班级', trigger: 'change' }],
@@ -149,6 +181,15 @@ const rules = {
   start_time: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
   end_time: [{ required: true, message: '请选择结束时间', trigger: 'change' }]
 }
+const rescheduleRules = {
+  type: [{ required: true, message: '请选择调课类型', trigger: 'change' }],
+  reason: [{ required: true, message: '请输入调课原因', trigger: 'blur' }]
+}
+
+const currentScheduleLabel = computed(() => {
+  if (!currentSchedule.value) return ''
+  return `${currentSchedule.value.date} ${currentSchedule.value.start_time?.slice(0, 5)} ${currentSchedule.value.class_name || ''}`
+})
 
 function getStatusType(status) {
   const map = { scheduled: 'success', cancelled: 'info', completed: 'warning' }
@@ -220,7 +261,41 @@ async function handleCancel(row) {
   } catch (e) { if (e !== 'cancel') ElMessage.error('操作失败') }
 }
 
-function handleReschedule(row) { ElMessage.info('调课功能: ' + row.class_name) }
+async function handleReschedule(row) {
+  currentSchedule.value = row
+  rescheduleForm.original_schedule_id = row.id
+  rescheduleForm.new_schedule_id = null
+  rescheduleForm.type = 'adjust'
+  rescheduleForm.reason = ''
+  try {
+    const res = await api.get('/edu/schedules/', {
+      params: {
+        edu_class: row.edu_class,
+        teacher: row.teacher,
+        page_size: 100
+      }
+    })
+    const list = res.data.results || res.data
+    scheduleOptions.value = list.filter(item => item.id !== row.id)
+    rescheduleDialogVisible.value = true
+  } catch (e) {
+    ElMessage.error('获取调课候选课次失败')
+  }
+}
+
+async function submitReschedule() {
+  if (!rescheduleFormRef.value) return
+  await rescheduleFormRef.value.validate(async valid => {
+    if (!valid) return
+    try {
+      await api.post('/edu/reschedules/', rescheduleForm)
+      ElMessage.success('调课申请已提交')
+      rescheduleDialogVisible.value = false
+    } catch (e) {
+      ElMessage.error(e.response?.data?.error || '提交调课失败')
+    }
+  })
+}
 
 async function handleSubmit() {
   if (!formRef.value) return

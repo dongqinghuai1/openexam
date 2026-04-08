@@ -88,8 +88,8 @@
         </el-form-item>
         <el-form-item label="性别">
           <el-radio-group v-model="form.gender">
-            <el-radio label="male">男</el-radio>
-            <el-radio label="female">女</el-radio>
+            <el-radio value="male">男</el-radio>
+            <el-radio value="female">女</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="角色" prop="role_ids">
@@ -178,7 +178,7 @@ async function handleResetPwd(row) {
 async function handleDelete(row) {
   try {
     await ElMessageBox.confirm(`确定删除用户 "${row.username}" 吗?`, '提示', { type: 'warning' })
-    await api.delete(`/users/${row.id}/`)
+    await api.delete(`/users/${row.id}`)
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) { if (e !== 'cancel') ElMessage.error('删除失败') }
@@ -190,7 +190,7 @@ async function handleSubmit() {
     if (valid) {
       try {
         if (form.id) {
-          await api.put(`/users/${form.id}/`, form)
+          await api.put(`/users/${form.id}`, form)
           ElMessage.success('更新成功')
         } else {
           await api.post('/users/', form)

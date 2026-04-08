@@ -104,6 +104,16 @@ class EduClassViewSet(viewsets.ModelViewSet):
             return EduClassListSerializer
         return EduClassDetailSerializer
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        instance.full_clean()
+        instance.save()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.full_clean()
+        instance.save()
+
     @action(detail=True, methods=['post'])
     def add_student(self, request, pk=None):
         """添加学生到班级"""
@@ -194,6 +204,11 @@ class RescheduleRecordViewSet(viewsets.ModelViewSet):
     serializer_class = RescheduleRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['status', 'type']
+
+    def get_queryset(self):
+        return RescheduleRecord.objects.select_related(
+            'original_schedule', 'new_schedule', 'applicant', 'approver'
+        ).all()
 
 
 class LeaveRecordViewSet(viewsets.ModelViewSet):

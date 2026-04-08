@@ -11,6 +11,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - eduadmin_net
     restart: unless-stopped
 
   # Redis缓存
@@ -19,6 +21,8 @@ services:
     container_name: eduadmin-redis
     ports:
       - "6379:6379"
+    networks:
+      - eduadmin_net
     restart: unless-stopped
 
   # Django后端
@@ -34,10 +38,13 @@ services:
       - DB_NAME=eduadmin
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - DB_ENGINE=postgres
       - REDIS_URL=redis://redis:6379/0
     depends_on:
       - postgres
       - redis
+    networks:
+      - eduadmin_net
     restart: unless-stopped
 
   # Vue3前端
@@ -50,7 +57,16 @@ services:
       - "3000:80"
     depends_on:
       - backend
+    networks:
+      - eduadmin_net
     restart: unless-stopped
 
 volumes:
   postgres_data:
+
+networks:
+  eduadmin_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

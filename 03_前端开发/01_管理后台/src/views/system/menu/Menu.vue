@@ -93,7 +93,8 @@ const rules = {
 function flattenTree(menus, level = 0) {
   let result = []
   for (const menu of menus) {
-    result.push({ ...menu, _level: level })
+    const { children, ...rest } = menu
+    result.push({ ...rest, _level: level })
     if (menu.children && menu.children.length > 0) {
       result = result.concat(flattenTree(menu.children, level + 1))
     }

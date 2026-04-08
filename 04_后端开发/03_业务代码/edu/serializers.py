@@ -128,11 +128,47 @@ class EduClassListSerializer(serializers.ModelSerializer):
 class EduClassDetailSerializer(serializers.ModelSerializer):
     course = CourseListSerializer(read_only=True)
     teacher = TeacherSerializer(read_only=True)
+    code = serializers.CharField(required=False, allow_blank=True)
+    course_id = serializers.PrimaryKeyRelatedField(
+        source='course', queryset=Course.objects.all(), write_only=True
+    )
+    teacher_id = serializers.PrimaryKeyRelatedField(
+        source='teacher', queryset=Teacher.objects.all(), write_only=True
+    )
     class_students = ClassStudentSerializer(many=True, read_only=True)
 
     class Meta:
         model = EduClass
-        fields = '__all__'
+        fields = [
+            'id', 'name', 'code',
+            'course', 'course_id',
+            'teacher', 'teacher_id',
+            'max_students', 'status',
+            'start_date', 'end_date',
+            'created_at', 'updated_at',
+            'class_students',
+        ]
+
+    def to_internal_value(self, data):
+        mutable = data.copy()
+        if 'course' in mutable and 'course_id' not in mutable:
+            mutable['course_id'] = mutable.get('course')
+        if 'teacher' in mutable and 'teacher_id' not in mutable:
+            mutable['teacher_id'] = mutable.get('teacher')
+        return super().to_internal_value(mutable)
+
+    def validate(self, attrs):
+        start_date = attrs.get('start_date')
+        end_date = attrs.get('end_date')
+
+        if self.instance:
+            start_date = start_date or self.instance.start_date
+            end_date = end_date if 'end_date' in attrs else self.instance.end_date
+
+        if start_date and end_date and end_date < start_date:
+            raise serializers.ValidationError({'end_date': '结课日期不能早于开班日期'})
+
+        return attrs
 
 
 class ScheduleSerializer(serializers.ModelSerializer):
@@ -152,10 +188,36 @@ class ScheduleSerializer(serializers.ModelSerializer):
 class RescheduleRecordSerializer(serializers.ModelSerializer):
     original_schedule = ScheduleSerializer(read_only=True)
     applicant_name = serializers.CharField(source='applicant.username', read_only=True)
+    original_schedule_id = serializers.PrimaryKeyRelatedField(
+        source='original_schedule', queryset=Schedule.objects.all(), write_only=True
+    )
+    new_schedule_id = serializers.PrimaryKeyRelatedField(
+        source='new_schedule', queryset=Schedule.objects.all(), write_only=True, required=False, allow_null=True
+    )
 
     class Meta:
         model = RescheduleRecord
-        fields = '__all__'
+        fields = [
+            'id', 'original_schedule', 'original_schedule_id',
+            'new_schedule', 'new_schedule_id',
+            'type', 'reason', 'status',
+            'applicant', 'applicant_name', 'approver', 'created_at'
+        ]
+
+    def to_internal_value(self, data):
+        mutable = data.copy()
+        if 'original_schedule' in mutable and 'original_schedule_id' not in mutable:
+            mutable['original_schedule_id'] = mutable.get('original_schedule')
+        if 'new_schedule' in mutable and 'new_schedule_id' not in mutable:
+            mutable['new_schedule_id'] = mutable.get('new_schedule')
+        return super().to_internal_value(mutable)
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            validated_data.setdefault('applicant', request.user)
+        validated_data.setdefault('status', 'pending')
+        return super().create(validated_data)
 
 
 class LeaveRecordSerializer(serializers.ModelSerializer):
