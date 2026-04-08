@@ -24,14 +24,13 @@
 
       <el-table :data="tableData" v-loading="loading" stripe>
         <el-table-column prop="id" label="退款ID" width="80" />
-        <el-table-column prop="order.order_no" label="订单号" width="180" />
-        <el-table-column prop="order.student.name" label="学生姓名" width="100" />
-        <el-table-column prop="order.student.phone" label="手机号" width="120" />
+        <el-table-column prop="order_no" label="订单号" width="180" />
+        <el-table-column prop="student_name" label="学生姓名" width="100" />
         <el-table-column prop="amount" label="退款金额" width="100">
           <template #default="{ row }">¥{{ row.amount }}</template>
         </el-table-column>
         <el-table-column prop="reason" label="退款原因" min-width="150" />
-        <el-table-column prop="applicant.username" label="申请人" width="100" />
+        <el-table-column prop="applicant_name" label="申请人" width="100" />
         <el-table-column prop="created_at" label="申请时间" width="160" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
@@ -95,7 +94,7 @@ async function fetchData() {
 
 function handleQuery() { pagination.page = 1; fetchData() }
 function handleReset() { Object.assign(queryForm, { order_no: '', status: '' }); handleQuery() }
-function handleView(row) { ElMessage.info('退款详情: ' + row.id) }
+function handleView(row) { ElMessage.info(`退款详情: ${row.order_no} / ${row.amount}`) }
 
 async function handleApprove(row) {
   try {
@@ -103,7 +102,7 @@ async function handleApprove(row) {
     await api.post(`/finance/refunds/${row.id}/approve/`)
     ElMessage.success('审批成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('操作失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(e.response?.data?.error || '操作失败') }
 }
 
 async function handleReject(row) {
@@ -112,7 +111,7 @@ async function handleReject(row) {
     await api.post(`/finance/refunds/${row.id}/reject/`)
     ElMessage.success('已拒绝')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('操作失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(e.response?.data?.error || '操作失败') }
 }
 
 onMounted(() => { fetchData() })

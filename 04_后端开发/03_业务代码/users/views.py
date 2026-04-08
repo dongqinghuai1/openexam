@@ -3,8 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
-from .models import User, Role, Permission, Menu
+from .models import User, Role, Permission, Menu, OperationLog
 from .serializers import UserSerializer, UserCreateSerializer, RoleSerializer, MenuSerializer, PermissionSerializer
+from .serializers_log import OperationLogSerializer
 from .authentication import generate_token, refresh_access_token
 
 
@@ -185,3 +186,11 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PermissionSerializer
     permission_classes = [permissions.IsAuthenticated]
     search_fields = ['name', 'code']
+
+
+class OperationLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """操作日志视图"""
+    queryset = OperationLog.objects.all()
+    serializer_class = OperationLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_fields = ['username', 'method']

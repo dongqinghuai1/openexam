@@ -121,7 +121,11 @@ async function handlePlay(row) {
 }
 
 function handleDownload(row) {
-  ElMessage.info('下载功能: ' + row.file_url)
+  if (row.file_url) {
+    window.open(row.file_url, '_blank')
+  } else {
+    ElMessage.warning('当前没有可下载文件')
+  }
 }
 
 onMounted(() => { fetchData() })

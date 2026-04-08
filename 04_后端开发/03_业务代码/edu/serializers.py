@@ -223,10 +223,45 @@ class RescheduleRecordSerializer(serializers.ModelSerializer):
 class LeaveRecordSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.name', read_only=True)
     teacher_name = serializers.CharField(source='teacher.name', read_only=True)
+    schedule_info = serializers.SerializerMethodField()
 
     class Meta:
         model = LeaveRecord
         fields = '__all__'
+
+    def get_schedule_info(self, obj):
+        if not obj.schedule:
+            return None
+        return {
+            'id': obj.schedule.id,
+            'date': obj.schedule.date,
+            'start_time': obj.schedule.start_time,
+            'end_time': obj.schedule.end_time,
+            'class_name': obj.schedule.edu_class.name,
+        }
+
+    def validate(self, attrs):
+        leave_type = attrs.get('type') or getattr(self.instance, 'type', None)
+        student = attrs.get('student') if 'student' in attrs else getattr(self.instance, 'student', None)
+        teacher = attrs.get('teacher') if 'teacher' in attrs else getattr(self.instance, 'teacher', None)
+        schedule = attrs.get('schedule') or getattr(self.instance, 'schedule', None)
+
+        if leave_type == 'student' and not student:
+            raise serializers.ValidationError({'student': '学生请假必须选择学生'})
+        if leave_type == 'teacher' and not teacher:
+            raise serializers.ValidationError({'teacher': '教师请假必须选择教师'})
+        if leave_type == 'student' and teacher:
+            attrs['teacher'] = None
+        if leave_type == 'teacher' and student:
+            attrs['student'] = None
+
+        if schedule and leave_type == 'student' and student:
+            if not schedule.edu_class.class_students.filter(student=student, status='studying').exists():
+                raise serializers.ValidationError({'student': '该学生不在当前班级中'})
+        if schedule and leave_type == 'teacher' and teacher and schedule.teacher_id != teacher.id:
+            raise serializers.ValidationError({'teacher': '该教师不是当前课次授课教师'})
+
+        return attrs
 
 
 class StudentHoursAccountSerializer(serializers.ModelSerializer):
@@ -237,9 +272,26 @@ class StudentHoursAccountSerializer(serializers.ModelSerializer):
         model = StudentHoursAccount
         fields = ['id', 'student', 'student_name', 'course', 'course_name', 'total_hours', 'used_hours', 'frozen_hours', 'gift_hours', 'remaining_hours', 'status', 'expire_date']
 
+    def create(self, validated_data):
+        request = self.context.get('request')
+        account = super().create(validated_data)
+        initial_hours = account.total_hours + account.gift_hours
+        HoursFlow.objects.create(
+            account=account,
+            type='gift' if account.gift_hours else 'deduct',
+            hours=initial_hours,
+            balance_before=0,
+            balance_after=initial_hours,
+            note='初始化课时账户',
+            operator=request.user if request and request.user.is_authenticated else None,
+        )
+        return account
+
 
 class HoursFlowSerializer(serializers.ModelSerializer):
     operator_name = serializers.CharField(source='operator.username', read_only=True)
+    student_name = serializers.CharField(source='account.student.name', read_only=True)
+    course_name = serializers.CharField(source='account.course.name', read_only=True)
 
     class Meta:
         model = HoursFlow

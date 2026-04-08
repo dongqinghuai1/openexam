@@ -1,7 +1,10 @@
 from datetime import date
+from django.core.exceptions import ValidationError as DjangoValidationError
+from decimal import Decimal
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django_filters import rest_framework as filters
 from .models import Subject, Course, Chapter, Section, CoursePackage, Student, Teacher, EduClass, ClassStudent, Schedule, RescheduleRecord, LeaveRecord, StudentHoursAccount, HoursFlow
 from . import serializers
@@ -105,13 +108,21 @@ class EduClassViewSet(viewsets.ModelViewSet):
         return EduClassDetailSerializer
 
     def perform_create(self, serializer):
-        instance = serializer.save()
-        instance.full_clean()
+        instance = EduClass(**serializer.validated_data)
+        try:
+            instance.full_clean()
+        except DjangoValidationError as exc:
+            raise ValidationError(exc.message_dict)
         instance.save()
 
     def perform_update(self, serializer):
-        instance = serializer.save()
-        instance.full_clean()
+        instance = serializer.instance
+        for field, value in serializer.validated_data.items():
+            setattr(instance, field, value)
+        try:
+            instance.full_clean()
+        except DjangoValidationError as exc:
+            raise ValidationError(exc.message_dict)
         instance.save()
 
     @action(detail=True, methods=['post'])
@@ -197,6 +208,51 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None):
+        """完成上课并扣减课时"""
+        schedule = self.get_object()
+        if schedule.status == 'completed':
+            return Response({'error': '当前课次已完成'}, status=status.HTTP_400_BAD_REQUEST)
+
+        class_students = schedule.edu_class.class_students.filter(status='studying')
+        for cs in class_students:
+            try:
+                account = StudentHoursAccount.objects.get(
+                    student=cs.student,
+                    course=schedule.course,
+                    status='active'
+                )
+            except StudentHoursAccount.DoesNotExist:
+                continue
+
+            already_deducted = HoursFlow.objects.filter(
+                account=account,
+                schedule=schedule,
+                type='deduct'
+            ).exists()
+            if already_deducted:
+                continue
+
+            before = account.remaining_hours
+            account.used_hours += Decimal('1.0')
+            account.save(update_fields=['used_hours', 'updated_at'])
+
+            HoursFlow.objects.create(
+                account=account,
+                schedule=schedule,
+                type='deduct',
+                hours=Decimal('1.0'),
+                balance_before=before,
+                balance_after=account.remaining_hours,
+                note=f'上课扣课 - {schedule.date}',
+                operator=request.user,
+            )
+
+        schedule.status = 'completed'
+        schedule.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(schedule).data)
+
 
 class RescheduleRecordViewSet(viewsets.ModelViewSet):
     """调课记录视图"""
@@ -210,6 +266,26 @@ class RescheduleRecordViewSet(viewsets.ModelViewSet):
             'original_schedule', 'new_schedule', 'applicant', 'approver'
         ).all()
 
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        record = self.get_object()
+        if record.status != 'pending':
+            return Response({'error': '当前调课记录不可审批'}, status=status.HTTP_400_BAD_REQUEST)
+        record.status = 'approved'
+        record.approver = request.user
+        record.save(update_fields=['status', 'approver'])
+        return Response(self.get_serializer(record).data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        record = self.get_object()
+        if record.status != 'pending':
+            return Response({'error': '当前调课记录不可审批'}, status=status.HTTP_400_BAD_REQUEST)
+        record.status = 'rejected'
+        record.approver = request.user
+        record.save(update_fields=['status', 'approver'])
+        return Response(self.get_serializer(record).data)
+
 
 class LeaveRecordViewSet(viewsets.ModelViewSet):
     """请假记录视图"""
@@ -218,6 +294,27 @@ class LeaveRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['type', 'status', 'student', 'teacher']
 
+    def get_queryset(self):
+        return LeaveRecord.objects.select_related('schedule', 'student', 'teacher').all()
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        record = self.get_object()
+        if record.status != 'pending':
+            return Response({'error': '当前请假记录不可审批'}, status=status.HTTP_400_BAD_REQUEST)
+        record.status = 'approved'
+        record.save(update_fields=['status'])
+        return Response(self.get_serializer(record).data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        record = self.get_object()
+        if record.status != 'pending':
+            return Response({'error': '当前请假记录不可审批'}, status=status.HTTP_400_BAD_REQUEST)
+        record.status = 'rejected'
+        record.save(update_fields=['status'])
+        return Response(self.get_serializer(record).data)
+
 
 class StudentHoursAccountViewSet(viewsets.ModelViewSet):
     """学生课时账户视图"""
@@ -225,6 +322,104 @@ class StudentHoursAccountViewSet(viewsets.ModelViewSet):
     serializer_class = StudentHoursAccountSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['student', 'course', 'status']
+
+    def get_queryset(self):
+        return StudentHoursAccount.objects.select_related('student', 'course').all()
+
+    @action(detail=True, methods=['post'])
+    def gift(self, request, pk=None):
+        account = self.get_object()
+        hours = request.data.get('hours')
+        note = request.data.get('note', '赠送课时')
+
+        try:
+            hours = Decimal(str(hours))
+        except Exception:
+            return Response({'error': '课时数量格式不正确'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if hours <= 0:
+            return Response({'error': '赠送课时必须大于 0'}, status=status.HTTP_400_BAD_REQUEST)
+
+        before = account.remaining_hours
+        account.gift_hours += hours
+        account.save(update_fields=['gift_hours', 'updated_at'])
+
+        HoursFlow.objects.create(
+            account=account,
+            type='gift',
+            hours=hours,
+            balance_before=before,
+            balance_after=account.remaining_hours,
+            note=note,
+            operator=request.user,
+        )
+        return Response(StudentHoursAccountSerializer(account).data)
+
+    @action(detail=True, methods=['post'])
+    def freeze(self, request, pk=None):
+        account = self.get_object()
+        hours = request.data.get('hours')
+        note = request.data.get('note', '冻结课时')
+
+        try:
+            hours = Decimal(str(hours))
+        except Exception:
+            return Response({'error': '课时数量格式不正确'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if hours <= 0:
+            return Response({'error': '冻结课时必须大于 0'}, status=status.HTTP_400_BAD_REQUEST)
+        if account.remaining_hours < hours:
+            return Response({'error': '剩余课时不足，无法冻结'}, status=status.HTTP_400_BAD_REQUEST)
+
+        before = account.remaining_hours
+        account.frozen_hours += hours
+        if account.status == 'active':
+            account.status = 'frozen'
+        account.save(update_fields=['frozen_hours', 'status', 'updated_at'])
+
+        HoursFlow.objects.create(
+            account=account,
+            type='freeze',
+            hours=hours,
+            balance_before=before,
+            balance_after=account.remaining_hours,
+            note=note,
+            operator=request.user,
+        )
+        return Response(StudentHoursAccountSerializer(account).data)
+
+    @action(detail=True, methods=['post'])
+    def unfreeze(self, request, pk=None):
+        account = self.get_object()
+        hours = request.data.get('hours')
+        note = request.data.get('note', '解冻课时')
+
+        try:
+            hours = Decimal(str(hours))
+        except Exception:
+            return Response({'error': '课时数量格式不正确'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if hours <= 0:
+            return Response({'error': '解冻课时必须大于 0'}, status=status.HTTP_400_BAD_REQUEST)
+        if account.frozen_hours < hours:
+            return Response({'error': '冻结课时不足，无法解冻'}, status=status.HTTP_400_BAD_REQUEST)
+
+        before = account.remaining_hours
+        account.frozen_hours -= hours
+        if account.frozen_hours == 0 and account.status == 'frozen':
+            account.status = 'active'
+        account.save(update_fields=['frozen_hours', 'status', 'updated_at'])
+
+        HoursFlow.objects.create(
+            account=account,
+            type='unfreeze',
+            hours=hours,
+            balance_before=before,
+            balance_after=account.remaining_hours,
+            note=note,
+            operator=request.user,
+        )
+        return Response(StudentHoursAccountSerializer(account).data)
 
 
 class HoursFlowViewSet(viewsets.ReadOnlyModelViewSet):

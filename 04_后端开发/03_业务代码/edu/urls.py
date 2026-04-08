@@ -20,4 +20,11 @@ router.register(r'hours/flows', HoursFlowViewSet, basename='hours-flow')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('reschedules/<int:pk>/approve/', RescheduleRecordViewSet.as_view({'post': 'approve'}), name='reschedule-approve'),
+    path('reschedules/<int:pk>/reject/', RescheduleRecordViewSet.as_view({'post': 'reject'}), name='reschedule-reject'),
+    path('leaves/<int:pk>/approve/', LeaveRecordViewSet.as_view({'post': 'approve'}), name='leave-approve'),
+    path('leaves/<int:pk>/reject/', LeaveRecordViewSet.as_view({'post': 'reject'}), name='leave-reject'),
+    path('hours/accounts/<int:pk>/gift/', StudentHoursAccountViewSet.as_view({'post': 'gift'}), name='hours-account-gift'),
+    path('hours/accounts/<int:pk>/freeze/', StudentHoursAccountViewSet.as_view({'post': 'freeze'}), name='hours-account-freeze'),
+    path('hours/accounts/<int:pk>/unfreeze/', StudentHoursAccountViewSet.as_view({'post': 'unfreeze'}), name='hours-account-unfreeze'),
 ]

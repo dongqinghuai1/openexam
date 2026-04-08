@@ -282,7 +282,7 @@ class StudentHoursAccount(models.Model):
 
     @property
     def remaining_hours(self):
-        return self.total_hours - self.used_hours - self.frozen_hours
+        return self.total_hours + self.gift_hours - self.used_hours - self.frozen_hours
 
 
 class HoursFlow(models.Model):

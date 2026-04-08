@@ -8,4 +8,5 @@ router.register(r'refunds', RefundRecordViewSet, basename='refund')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('orders/<int:pk>/apply_refund/', OrderViewSet.as_view({'post': 'apply_refund'}), name='order-apply-refund'),
 ]

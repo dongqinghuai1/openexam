@@ -40,6 +40,12 @@ const routes = [
             name: 'MenuManagement',
             component: () => import('../views/system/menu/Menu.vue'),
             meta: { title: '菜单管理' }
+          },
+          {
+            path: 'logs',
+            name: 'OperationLogManagement',
+            component: () => import('../views/system/log/OperationLog.vue'),
+            meta: { title: '操作日志' }
           }
         ]
       },
@@ -115,6 +121,37 @@ const routes = [
             name: 'RefundManagement',
             component: () => import('../views/finance/refund/Refund.vue'),
             meta: { title: '退款管理' }
+          }
+        ]
+      },
+      {
+        path: 'exam',
+        name: 'Exam',
+        meta: { title: '考试管理', icon: 'Reading' },
+        children: [
+          {
+            path: 'questions',
+            name: 'QuestionManagement',
+            component: () => import('../views/exam/question/Question.vue'),
+            meta: { title: '题库管理' }
+          },
+          {
+            path: 'papers',
+            name: 'PaperManagement',
+            component: () => import('../views/exam/paper/Paper.vue'),
+            meta: { title: '试卷管理' }
+          },
+          {
+            path: 'exams',
+            name: 'ExamManagement',
+            component: () => import('../views/exam/exam/Exam.vue'),
+            meta: { title: '考试管理' }
+          },
+          {
+            path: 'scores',
+            name: 'ScoreManagement',
+            component: () => import('../views/exam/score/Score.vue'),
+            meta: { title: '成绩管理' }
           }
         ]
       },

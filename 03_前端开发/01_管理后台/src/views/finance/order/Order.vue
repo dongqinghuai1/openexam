@@ -4,6 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>订单管理</span>
+          <el-button type="primary" @click="handleAdd">新增订单</el-button>
         </div>
       </template>
 
@@ -72,6 +73,7 @@
             <el-button type="primary" link @click="handleView(row)">详情</el-button>
             <el-button v-if="row.status === 'pending'" type="success" link @click="handlePay(row)">支付</el-button>
             <el-button v-if="row.status === 'pending'" type="danger" link @click="handleCancel(row)">取消</el-button>
+            <el-button v-if="row.status === 'paid'" type="warning" link @click="handleApplyRefund(row)">申请退款</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -87,6 +89,66 @@
         style="margin-top: 20px; justify-content: flex-end"
       />
     </el-card>
+
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px">
+      <el-form v-if="dialogMode === 'create'" ref="formRef" :model="form" :rules="rules" label-width="100px">
+        <el-form-item label="学生" prop="student">
+          <el-select v-model="form.student" filterable>
+            <el-option v-for="item in students" :key="item.id" :label="`${item.name} (${item.phone})`" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="课程" prop="course">
+          <el-select v-model="form.course" clearable>
+            <el-option v-for="item in courses" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="课时数" prop="quantity">
+          <el-input-number v-model="form.quantity" :min="1" :max="500" />
+        </el-form-item>
+        <el-form-item label="订单金额" prop="amount">
+          <el-input-number v-model="form.amount" :min="0" :precision="2" />
+        </el-form-item>
+        <el-form-item label="优惠金额">
+          <el-input-number v-model="form.discount" :min="0" :precision="2" />
+        </el-form-item>
+        <el-form-item label="实收金额" prop="final_amount">
+          <el-input-number v-model="form.final_amount" :min="0" :precision="2" />
+        </el-form-item>
+        <el-form-item label="支付方式" prop="payment_type">
+          <el-select v-model="form.payment_type">
+            <el-option label="微信" value="wechat" />
+            <el-option label="支付宝" value="alipay" />
+            <el-option label="线下" value="offline" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <el-descriptions v-else-if="dialogMode === 'detail'" :column="2" border>
+        <el-descriptions-item label="订单号">{{ currentOrder.order_no }}</el-descriptions-item>
+        <el-descriptions-item label="学生">{{ currentOrder.student_name }}</el-descriptions-item>
+        <el-descriptions-item label="课程">{{ currentOrder.course_name || currentOrder.package_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="课时数">{{ currentOrder.quantity }}</el-descriptions-item>
+        <el-descriptions-item label="订单金额">¥{{ currentOrder.amount }}</el-descriptions-item>
+        <el-descriptions-item label="实收金额">¥{{ currentOrder.final_amount }}</el-descriptions-item>
+        <el-descriptions-item label="支付方式">{{ getPaymentType(currentOrder.payment_type) }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ getStatusText(currentOrder.status) }}</el-descriptions-item>
+      </el-descriptions>
+
+      <el-form v-else ref="refundFormRef" :model="refundForm" :rules="refundRules" label-width="100px">
+        <el-form-item label="退款金额" prop="amount">
+          <el-input-number v-model="refundForm.amount" :min="0" :precision="2" />
+        </el-form-item>
+        <el-form-item label="退款原因" prop="reason">
+          <el-input v-model="refundForm.reason" type="textarea" :rows="3" />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button v-if="dialogMode === 'create'" type="primary" @click="submitOrder">确定</el-button>
+        <el-button v-else-if="dialogMode === 'refund'" type="primary" @click="submitRefund">提交</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -99,9 +161,31 @@ const loading = ref(false)
 const tableData = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('订单详情')
+const dialogMode = ref('detail')
+const formRef = ref()
+const refundFormRef = ref()
+const students = ref([])
+const courses = ref([])
+const currentOrder = ref({})
 
 const queryForm = reactive({ order_no: '', student_name: '', status: '', payment_type: '' })
 const pagination = reactive({ page: 1, size: 10, total: 0 })
+const form = reactive({ student: null, course: null, quantity: 1, amount: 0, discount: 0, final_amount: 0, payment_type: 'wechat', status: 'pending' })
+const refundForm = reactive({ amount: 0, reason: '' })
+
+const rules = {
+  student: [{ required: true, message: '请选择学生', trigger: 'change' }],
+  course: [{ required: true, message: '请选择课程', trigger: 'change' }],
+  quantity: [{ required: true, message: '请输入课时数', trigger: 'change' }],
+  amount: [{ required: true, message: '请输入订单金额', trigger: 'change' }],
+  final_amount: [{ required: true, message: '请输入实收金额', trigger: 'change' }],
+  payment_type: [{ required: true, message: '请选择支付方式', trigger: 'change' }]
+}
+
+const refundRules = {
+  amount: [{ required: true, message: '请输入退款金额', trigger: 'change' }],
+  reason: [{ required: true, message: '请输入退款原因', trigger: 'blur' }]
+}
 
 function getStatusType(status) {
   const map = { pending: 'warning', paid: 'success', cancelled: 'info', refunded: 'danger' }
@@ -128,9 +212,70 @@ async function fetchData() {
   finally { loading.value = false }
 }
 
+async function fetchOptions() {
+  const [studentRes, courseRes] = await Promise.all([
+    api.get('/edu/students/'),
+    api.get('/edu/courses/')
+  ])
+  students.value = studentRes.data.results || studentRes.data
+  courses.value = courseRes.data.results || courseRes.data
+}
+
 function handleQuery() { pagination.page = 1; fetchData() }
 function handleReset() { Object.assign(queryForm, { order_no: '', student_name: '', status: '', payment_type: '' }); handleQuery() }
-function handleView(row) { ElMessage.info('订单详情: ' + row.order_no) }
+
+function handleAdd() {
+  dialogMode.value = 'create'
+  dialogTitle.value = '新增订单'
+  Object.assign(form, { student: null, course: null, quantity: 1, amount: 0, discount: 0, final_amount: 0, payment_type: 'wechat', status: 'pending' })
+  dialogVisible.value = true
+}
+
+function handleView(row) {
+  dialogMode.value = 'detail'
+  dialogTitle.value = '订单详情'
+  currentOrder.value = row
+  dialogVisible.value = true
+}
+
+function handleApplyRefund(row) {
+  dialogMode.value = 'refund'
+  dialogTitle.value = '申请退款'
+  currentOrder.value = row
+  Object.assign(refundForm, { amount: Number(row.final_amount), reason: '' })
+  dialogVisible.value = true
+}
+
+async function submitOrder() {
+  if (!formRef.value) return
+  const valid = await formRef.value.validate().catch(() => false)
+  if (!valid) return
+  try {
+    await api.post('/finance/orders/', form)
+    ElMessage.success('订单创建成功')
+    dialogVisible.value = false
+    fetchData()
+  } catch (e) {
+    const data = e.response?.data
+    const message = data?.course?.[0] || data?.student?.[0] || data?.final_amount?.[0] || '订单创建失败'
+    ElMessage.error(message)
+  }
+}
+
+async function submitRefund() {
+  if (!refundFormRef.value) return
+  const valid = await refundFormRef.value.validate().catch(() => false)
+  if (!valid) return
+  try {
+    await api.post(`/finance/orders/${currentOrder.value.id}/apply_refund/`, refundForm)
+    ElMessage.success('退款申请已提交')
+    dialogVisible.value = false
+  } catch (e) {
+    const data = e.response?.data
+    const message = data?.error || data?.reason?.[0] || '退款申请失败'
+    ElMessage.error(message)
+  }
+}
 
 async function handlePay(row) {
   try {
@@ -150,7 +295,7 @@ async function handleCancel(row) {
   } catch (e) { if (e !== 'cancel') ElMessage.error('操作失败') }
 }
 
-onMounted(() => { fetchData() })
+onMounted(async () => { await fetchOptions(); fetchData() })
 </script>
 
 <style scoped>

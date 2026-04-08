@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
+from decimal import Decimal
 from edu.models import Schedule, StudentHoursAccount, HoursFlow
 from .models import MeetingRoom, MeetingRecord, RecordingTask, PlaybackFile, ClassNote
 from .serializers import (
@@ -97,9 +98,13 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
         meeting_room.save()
 
         # 启动录制任务
-        RecordingTask.objects.create(
+        RecordingTask.objects.update_or_create(
             meeting_room=meeting_room,
-            status='pending'
+            defaults={
+                'status': 'recording',
+                'start_time': timezone.now(),
+                'record_id': f'record_{timezone.now().strftime("%Y%m%d%H%M%S")}'
+            }
         )
 
         return Response(MeetingRoomSerializer(meeting_room).data)
@@ -113,11 +118,26 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
         meeting_room.save()
 
         # 更新录制任务
-        recording_task = meeting_room.recording_tasks.filter(status='recording').first()
+        recording_task = meeting_room.recording_tasks.order_by('-created_at').first()
         if recording_task:
             recording_task.status = 'ready'
             recording_task.end_time = timezone.now()
+            if recording_task.start_time:
+                recording_task.duration = int((recording_task.end_time - recording_task.start_time).total_seconds())
+            recording_task.file_url = recording_task.file_url or f'https://meeting.tencent.com/mock-record/{recording_task.record_id or meeting_room.meeting_id}.mp4'
+            recording_task.file_size = recording_task.file_size or 50 * 1024 * 1024
             recording_task.save()
+
+            PlaybackFile.objects.update_or_create(
+                recording_task=recording_task,
+                defaults={
+                    'file_url': recording_task.file_url,
+                    'file_size': recording_task.file_size,
+                    'duration': recording_task.duration,
+                    'status': 'ready',
+                    'view_permission': 'all'
+                }
+            )
 
         # 扣减课时
         self.deduct_hours(meeting_room.schedule)
@@ -134,18 +154,21 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
                     course=schedule.course,
                     status='active'
                 )
-                before = account.used_hours
-                account.used_hours += 1
+                if HoursFlow.objects.filter(account=account, schedule=schedule, type='deduct').exists():
+                    continue
+                before = account.remaining_hours
+                account.used_hours += Decimal('1.0')
                 account.save()
 
                 HoursFlow.objects.create(
                     account=account,
                     schedule=schedule,
                     type='deduct',
-                    hours=1,
+                    hours=Decimal('1.0'),
                     balance_before=before,
-                    balance_after=account.used_hours,
-                    note=f'上课扣课 - {schedule.date}'
+                    balance_after=account.remaining_hours,
+                    note=f'上课扣课 - {schedule.date}',
+                    operator=None,
                 )
             except StudentHoursAccount.DoesNotExist:
                 pass

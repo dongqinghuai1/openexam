@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, RoleViewSet, MenuViewSet, PermissionViewSet, LoginView
+from .views import UserViewSet, RoleViewSet, MenuViewSet, PermissionViewSet, OperationLogViewSet, LoginView
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'', UserViewSet, basename='user')
@@ -16,4 +16,5 @@ urlpatterns = [
     path('menus/all/', MenuViewSet.as_view({'get': 'all'}), name='menu-all'),
     path('menus/<int:pk>/', MenuViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='menu-detail'),
     path('permissions/', PermissionViewSet.as_view({'get': 'list'}), name='permission-list'),
+    path('operation-logs/', OperationLogViewSet.as_view({'get': 'list'}), name='operation-log-list'),
 ]

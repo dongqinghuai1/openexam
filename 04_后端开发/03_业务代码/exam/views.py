@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.utils import timezone
 from .models import Question, Paper, Exam, ExamAnswer, ScoreRecord
 from .serializers import QuestionSerializer, PaperSerializer, ExamSerializer, ScoreRecordSerializer
 from edu.models import Student
@@ -30,11 +31,24 @@ class ExamViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['edu_class', 'status']
 
+    def get_permissions(self):
+        if self.action == 'submit':
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        queryset = Exam.objects.select_related('paper', 'edu_class').all().order_by('-start_time')
+        user = getattr(self.request, 'user', None)
+        path = getattr(self.request, 'path', '')
+        if user and user.is_authenticated and 'api/exam/exams' in path and 'admin' not in path:
+            return queryset
+        return queryset
+
     @action(detail=True, methods=['post'])
     def publish(self, request, pk=None):
         """发布考试"""
         exam = self.get_object()
-        exam.status = 'pending'
+        exam.status = 'ongoing' if exam.start_time <= timezone.now() <= exam.end_time else 'pending'
         exam.save()
         return Response({'message': '考试已发布'})
 
@@ -89,11 +103,19 @@ class ExamViewSet(viewsets.ModelViewSet):
             },
         )
 
+        ranked_scores = list(ScoreRecord.objects.filter(exam=exam).order_by('-score', 'created_at'))
+        for rank, item in enumerate(ranked_scores, start=1):
+            if item.rank != rank:
+                item.rank = rank
+                item.save(update_fields=['rank'])
+        score_record.refresh_from_db()
+
         return Response({
             'message': '提交成功',
             'student_id': student_id,
             'score': score_record.score,
             'total_score': score_record.total_score,
+            'rank': score_record.rank,
         })
 
 

@@ -82,21 +82,16 @@ import { api } from '@/stores/user'
 import * as echarts from 'echarts'
 
 const stats = ref({
-  todayRevenue: '12,800',
-  monthRevenue: '286,500',
-  todayOrders: 15,
-  monthOrders: 156
+  todayRevenue: 0,
+  monthRevenue: 0,
+  todayOrders: 0,
+  monthOrders: 0
 })
 
 const dateRange = ref([])
 const chartRef = ref(null)
 const pieChartRef = ref(null)
-const courseStats = ref([
-  { name: 'Python入门', orderCount: 45, revenue: 45000 },
-  { name: 'Java基础', orderCount: 38, revenue: 38000 },
-  { name: 'Web前端', orderCount: 32, revenue: 32000 },
-  { name: '数据结构', orderCount: 25, revenue: 25000 }
-])
+const courseStats = ref([])
 
 let chart = null
 let pieChart = null
@@ -137,13 +132,55 @@ function initPieChart() {
 
 async function fetchChartData() {
   try {
-    const res = await api.get('/finance/orders/statistics/', {
-      params: {
-        start_date: dateRange.value?.[0] || '',
-        end_date: dateRange.value?.[1] || ''
-      }
+    const now = new Date()
+    const today = now.toISOString().slice(0, 10)
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+
+    const [todayRes, monthRes] = await Promise.all([
+      api.get('/finance/orders/statistics/', {
+        params: {
+          start_date: today,
+          end_date: `${today}T23:59:59`
+        }
+      }),
+      api.get('/finance/orders/statistics/', {
+        params: {
+          start_date: monthStart,
+          end_date: `${today}T23:59:59`
+        }
+      })
+    ])
+
+    stats.value.todayRevenue = todayRes.data.total_amount || 0
+    stats.value.todayOrders = todayRes.data.order_count || 0
+    stats.value.monthRevenue = monthRes.data.total_amount || 0
+    stats.value.monthOrders = monthRes.data.order_count || 0
+
+    const paymentStats = monthRes.data.payment_stats || []
+    courseStats.value = paymentStats.map(item => ({
+      name: item.payment_type,
+      orderCount: item.count,
+      revenue: item.amount || 0
+    }))
+
+    pieChart?.setOption({
+      series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: paymentStats.map(item => ({ value: item.amount || 0, name: item.payment_type }))
+      }]
     })
-    // 更新图表数据
+
+    chart?.setOption({
+      xAxis: { type: 'category', data: ['今日', '本月'] },
+      series: [{
+        name: '收入',
+        type: 'line',
+        data: [stats.value.todayRevenue, stats.value.monthRevenue],
+        smooth: true,
+        areaStyle: { color: 'rgba(64, 158, 255, 0.2)' }
+      }]
+    })
   } catch (e) { console.error(e) }
 }
 
