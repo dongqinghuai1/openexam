@@ -85,6 +85,7 @@ export default function Index() {
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>
               <View className="course-name">{item.course_name}</View>
+              <Button className="start-btn" onClick={() => Taro.navigateTo({ url: `/pages/schedule-detail/index?id=${item.id}` })}>查看详情</Button>
               <Button className="start-btn" onClick={() => handleStartClass(item)}>开始上课</Button>
             </View>
           ))
@@ -107,6 +108,10 @@ export default function Index() {
           <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/recordings/index' })}>
             <Text className="icon">📹</Text>
             <Text className="label">录屏回放</Text>
+          </View>
+          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/notes/index' })}>
+            <Text className="icon">📝</Text>
+            <Text className="label">课堂笔记</Text>
           </View>
           <View className="menu-item" onClick={handleProfile}>
             <Text className="icon">👤</Text>

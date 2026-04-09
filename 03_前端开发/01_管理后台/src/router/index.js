@@ -188,8 +188,19 @@ router.beforeEach((to, from, next) => {
   if (to.path !== '/login' && !userStore.token) {
     next('/login')
   } else if (to.path === '/login' && userStore.token) {
-    next('/')
+    if (userStore.isAdminConsoleUser) {
+      next('/')
+    } else {
+      userStore.logout()
+      next('/login')
+    }
   } else {
+    if (to.path !== '/login' && userStore.token && !userStore.isAdminConsoleUser) {
+      window.alert('当前账号不是管理员，不能进入管理后台，请使用对应的教师端、学生端或家长端登录。')
+      userStore.logout()
+      next('/login')
+      return
+    }
     next()
   }
 })

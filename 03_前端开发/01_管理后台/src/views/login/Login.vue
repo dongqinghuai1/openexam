@@ -19,7 +19,63 @@
           <el-button type="primary" :loading="loading" class="login-btn" @click="handleLogin">登录</el-button>
         </el-form-item>
       </el-form>
+
+      <div class="auth-links">
+        <span @click="registerVisible = true">用户注册</span>
+        <span @click="resetVisible = true">忘记密码</span>
+      </div>
     </section>
+
+    <el-dialog v-model="registerVisible" title="用户注册" width="520px">
+        <el-form :model="registerForm" label-width="92px">
+        <el-form-item label="用户名"><el-input v-model="registerForm.username" /></el-form-item>
+        <el-form-item label="邮箱"><el-input v-model="registerForm.email" /></el-form-item>
+        <el-form-item label="手机号"><el-input v-model="registerForm.phone" /></el-form-item>
+        <el-form-item label="验证码">
+          <div class="sms-row">
+            <el-input v-model="registerForm.verify_code" />
+            <el-button @click="sendSmsCode('register')">发送验证码</el-button>
+          </div>
+        </el-form-item>
+        <el-form-item label="密码"><el-input v-model="registerForm.password" type="password" show-password /></el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="registerForm.role" style="width: 100%">
+            <el-option label="学生" value="student" />
+            <el-option label="家长" value="parent" />
+            <el-option label="教师" value="teacher" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="姓名"><el-input v-model="registerForm.name" /></el-form-item>
+        <el-form-item v-if="registerForm.role === 'student'" label="年级"><el-input v-model="registerForm.grade" /></el-form-item>
+        <el-form-item v-if="registerForm.role === 'student'" label="学校"><el-input v-model="registerForm.school" /></el-form-item>
+        <el-form-item v-if="registerForm.role === 'student'" label="家长姓名"><el-input v-model="registerForm.parent_name" /></el-form-item>
+        <el-form-item v-if="registerForm.role === 'student'" label="家长手机"><el-input v-model="registerForm.parent_phone" /></el-form-item>
+        <el-form-item v-if="registerForm.role === 'teacher'" label="学历"><el-input v-model="registerForm.education" /></el-form-item>
+        <el-form-item v-if="registerForm.role === 'teacher'" label="专业"><el-input v-model="registerForm.major" /></el-form-item>
+        <el-form-item v-if="registerForm.role === 'teacher'" label="证书"><el-input v-model="registerForm.certification" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="registerVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleRegister">提交注册</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="resetVisible" title="重置密码" width="460px">
+      <el-form :model="resetForm" label-width="92px">
+        <el-form-item label="邮箱"><el-input v-model="resetForm.email" /></el-form-item>
+        <el-form-item label="验证码">
+          <div class="sms-row">
+            <el-input v-model="resetForm.verify_code" />
+            <el-button @click="sendSmsCode('reset_password')">发送验证码</el-button>
+          </div>
+        </el-form-item>
+        <el-form-item label="新密码"><el-input v-model="resetForm.new_password" type="password" show-password /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleResetPassword">重置密码</el-button>
+      </template>
+    </el-dialog>
 
     <footer class="login-footer">© 2025 OPENEXAM</footer>
   </div>
@@ -29,7 +85,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/stores/user'
+import { api, useUserStore } from '@/stores/user'
 import { extractErrorMessage } from '@/utils/error'
 
 const router = useRouter()
@@ -37,10 +93,38 @@ const userStore = useUserStore()
 
 const formRef = ref()
 const loading = ref(false)
+const registerVisible = ref(false)
+const resetVisible = ref(false)
+const teacherPortalUrl = import.meta.env.VITE_TEACHER_PORTAL_URL || 'http://127.0.0.1:3001'
+const studentPortalUrl = import.meta.env.VITE_STUDENT_PORTAL_URL || 'http://127.0.0.1:3002'
+const parentPortalUrl = import.meta.env.VITE_PARENT_PORTAL_URL || 'http://127.0.0.1:3003'
 
 const form = reactive({
   username: '',
   password: ''
+})
+
+const registerForm = reactive({
+  username: '',
+  email: '',
+  phone: '',
+  verify_code: '',
+  password: '',
+  role: 'student',
+  name: '',
+  grade: '',
+  school: '',
+  parent_name: '',
+  parent_phone: '',
+  education: '',
+  major: '',
+  certification: ''
+})
+
+const resetForm = reactive({
+  email: '',
+  verify_code: '',
+  new_password: ''
 })
 
 const rules = {
@@ -55,13 +139,73 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    await userStore.login(form.username, form.password)
+    const result = await userStore.login(form.username, form.password)
+    const roleCodes = (result.user?.roles || []).map(item => item.code)
+    if (!result.user?.is_superuser && !roleCodes.includes('admin')) {
+      const payload = new URLSearchParams({
+        token: result.token,
+        refresh_token: result.refresh_token,
+        user: encodeURIComponent(JSON.stringify(result.user))
+      }).toString()
+
+      if (roleCodes.includes('teacher') && teacherPortalUrl) {
+        window.location.href = `${teacherPortalUrl}${teacherPortalUrl.includes('?') ? '&' : '?'}${payload}`
+        return
+      }
+      if (roleCodes.includes('student') && studentPortalUrl) {
+        window.location.href = `${studentPortalUrl}${studentPortalUrl.includes('?') ? '&' : '?'}${payload}`
+        return
+      }
+      if (roleCodes.includes('parent') && parentPortalUrl) {
+        window.location.href = `${parentPortalUrl}${parentPortalUrl.includes('?') ? '&' : '?'}${payload}`
+        return
+      }
+
+      await userStore.logout()
+      ElMessage.error('当前账号不是管理员，请使用对应用户端登录，且需先配置对应端入口地址')
+      return
+    }
     ElMessage.success('登录成功')
     router.push('/')
   } catch (error) {
     ElMessage.error(extractErrorMessage(error, '登录失败'))
   } finally {
     loading.value = false
+  }
+}
+
+async function sendSmsCode(scene) {
+  const email = scene === 'register' ? registerForm.email : resetForm.email
+  if (!email) {
+    ElMessage.warning('请先输入邮箱')
+    return
+  }
+  try {
+    await api.post('/users/sms/send/', { email, scene })
+    ElMessage.success('验证码已发送')
+  } catch (error) {
+    ElMessage.error(extractErrorMessage(error, '发送验证码失败'))
+  }
+}
+
+async function handleRegister() {
+  try {
+    const payload = { ...registerForm }
+    await api.post('/users/register/', payload)
+    ElMessage.success(registerForm.role === 'teacher' ? '注册成功，等待审核' : '注册成功，请登录')
+    registerVisible.value = false
+  } catch (error) {
+    ElMessage.error(extractErrorMessage(error, '注册失败'))
+  }
+}
+
+async function handleResetPassword() {
+  try {
+    await api.post('/users/reset-password/', resetForm)
+    ElMessage.success('密码重置成功，请重新登录')
+    resetVisible.value = false
+  } catch (error) {
+    ElMessage.error(extractErrorMessage(error, '重置密码失败'))
   }
 }
 </script>
@@ -188,6 +332,24 @@ async function handleLogin() {
 .login-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 28px rgba(255, 255, 255, 0.12);
+}
+
+.auth-links {
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(250, 250, 250, 0.7);
+}
+
+.auth-links span {
+  cursor: pointer;
+}
+
+.sms-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
 }
 
 .login-footer {

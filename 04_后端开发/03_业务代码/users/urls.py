@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, RoleViewSet, MenuViewSet, PermissionViewSet, OperationLogViewSet, NotificationViewSet, DashboardView, LoginView
+from .views import UserViewSet, RoleViewSet, MenuViewSet, PermissionViewSet, OperationLogViewSet, NotificationViewSet, DashboardView, LoginView, SendSmsCodeView, RegisterView, ResetPasswordView
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'', UserViewSet, basename='user')
@@ -8,6 +8,9 @@ router.register(r'', UserViewSet, basename='user')
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('login', LoginView.as_view(), name='login-no-slash'),
+    path('sms/send/', SendSmsCodeView.as_view(), name='send-sms-code'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
     path('', include(router.urls)),
     path('roles/', RoleViewSet.as_view({'get': 'list', 'post': 'create'}), name='role-list'),
     path('roles/<int:pk>/', RoleViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='role-detail'),

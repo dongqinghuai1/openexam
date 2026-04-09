@@ -18,6 +18,151 @@
   padding: 20px;
 }
 
+.summary-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.summary-label,
+.summary-value {
+  display: block;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+}
+
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.filter-chip {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: white;
+  color: #666;
+  font-size: 13px;
+}
+
+.filter-chip.active {
+  background: #667eea;
+  color: white;
+}
+
+.trend-card,
+.distribution-card {
+  background: white;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.block-title {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.trend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.trend-label {
+  width: 88px;
+  font-size: 12px;
+  color: #666;
+}
+
+.trend-bar-wrap {
+  flex: 1;
+  height: 10px;
+  background: #eef2ff;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.trend-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 999px;
+}
+
+.trend-score {
+  width: 34px;
+  text-align: right;
+  font-size: 12px;
+  color: #333;
+}
+
+.distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.distribution-item {
+  padding: 12px 8px;
+  border-radius: 12px;
+  text-align: center;
+  background: #f8fafc;
+}
+
+.distribution-level,
+.distribution-count,
+.empty-inline {
+  display: block;
+}
+
+.distribution-level {
+  font-size: 13px;
+  color: #667085;
+  margin-bottom: 6px;
+}
+
+.distribution-count {
+  font-size: 18px;
+  font-weight: bold;
+  color: #111827;
+}
+
+.distribution-item.level-A { background: #ecfdf3; }
+.distribution-item.level-B { background: #eff8ff; }
+.distribution-item.level-C { background: #fff7ed; }
+.distribution-item.level-D { background: #fef3f2; }
+.distribution-item.level-F { background: #f3f4f6; }
+
+.empty-inline {
+  font-size: 13px;
+  color: #98a2b3;
+}
+
 .score-card {
   background: white;
   padding: 20px;

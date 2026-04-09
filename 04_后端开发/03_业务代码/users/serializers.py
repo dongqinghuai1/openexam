@@ -2,6 +2,34 @@ from rest_framework import serializers
 from .models import User, Role, Permission, Menu, UserRole, Notification
 
 
+class SendSmsCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    scene = serializers.ChoiceField(choices=['register', 'reset_password'])
+
+
+class RegisterSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    phone = serializers.CharField(max_length=20)
+    password = serializers.CharField(write_only=True, min_length=6)
+    verify_code = serializers.CharField(max_length=6)
+    role = serializers.ChoiceField(choices=['student', 'parent', 'teacher'])
+    name = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    grade = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    school = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    parent_name = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    parent_phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    education = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    major = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    certification = serializers.CharField(max_length=50, required=False, allow_blank=True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    verify_code = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True, min_length=6)
+
+
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission

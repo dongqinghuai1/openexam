@@ -1,4 +1,4 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import api from '../../utils/api'
@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 import './index.scss'
 
 export default function Schedule() {
-  const [schedules, setSchedules] = useState([])
+  const [schedules, setSchedules] = useState<any[]>([])
   const [currentDate, setCurrentDate] = useState(dayjs())
 
   useEffect(() => {
@@ -15,13 +15,13 @@ export default function Schedule() {
 
   const fetchSchedules = async () => {
     try {
-      const startDate = currentDate.startOf('month').format('YYYY-MM-DD')
-      const endDate = currentDate.endOf('month').format('YYYY-MM-DD')
-      const res = await api.get('/edu/schedules/', { 
-        date__gte: startDate, 
-        date__lte: endDate 
-      })
-      setSchedules(res.data?.results || res.data || [])
+      const studentId = Taro.getStorageSync('studentId')
+      if (!studentId) {
+        setSchedules([])
+        return
+      }
+      const res = await api.get(`/edu/students/${studentId}/schedules/`)
+      setSchedules(res || [])
     } catch (e) { console.error(e) }
   }
 
@@ -85,6 +85,7 @@ export default function Schedule() {
               <Text className="class-name">{item.class_name}</Text>
               <Text className="course-name">{item.course_name}</Text>
               <Text className="teacher">教师: {item.teacher_name}</Text>
+              <Button className="detail-btn" onClick={() => Taro.navigateTo({ url: `/pages/schedule-detail/index?id=${item.id}` })}>查看详情</Button>
             </View>
           ))}
       </View>

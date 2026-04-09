@@ -8,6 +8,8 @@ export default function Profile() {
   const [userInfo, setUserInfo] = useState<any>(Taro.getStorageSync('userInfo') || {})
   const [studentInfo, setStudentInfo] = useState<any>(null)
   const [scoreCount, setScoreCount] = useState(0)
+  const [scheduleCount, setScheduleCount] = useState(0)
+  const [upcomingCount, setUpcomingCount] = useState(0)
 
   useEffect(() => {
     fetchProfileData()
@@ -26,9 +28,15 @@ export default function Profile() {
       const studentId = student?.id || Taro.getStorageSync('studentId')
       if (studentId) {
         Taro.setStorageSync('studentId', studentId)
-        const scoreRes = await api.get('/exam/scores/', { student_id: studentId })
+        const [scoreRes, scheduleRes] = await Promise.all([
+          api.get('/exam/scores/', { student_id: studentId }),
+          api.get(`/edu/students/${studentId}/schedules/`),
+        ])
         const scores = scoreRes.results || scoreRes || []
+        const schedules = scheduleRes || []
         setScoreCount(scores.length)
+        setScheduleCount(schedules.length)
+        setUpcomingCount(schedules.filter((item: any) => item.status === 'scheduled').length)
       }
     } catch (e: any) {
       Taro.showToast({ title: e.message || '获取个人信息失败', icon: 'none' })
@@ -70,6 +78,14 @@ export default function Profile() {
         <View className="summary-item">
           <Text className="summary-label">成绩记录</Text>
           <Text className="summary-value">{scoreCount}</Text>
+        </View>
+        <View className="summary-item">
+          <Text className="summary-label">总课次</Text>
+          <Text className="summary-value">{scheduleCount}</Text>
+        </View>
+        <View className="summary-item">
+          <Text className="summary-label">待上课程</Text>
+          <Text className="summary-value">{upcomingCount}</Text>
         </View>
       </View>
 

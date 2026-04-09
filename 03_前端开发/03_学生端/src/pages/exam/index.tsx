@@ -1,4 +1,4 @@
-import { View, Text, Button, Radio, RadioGroup, Input } from '@tarojs/components'
+import { View, Text, Button, Radio, RadioGroup } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import api from '../../utils/api'
@@ -64,18 +64,46 @@ export default function Exam() {
     setAnswers({ ...answers, [currentQuestion]: answer })
   }
 
+  const prevQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1)
+    }
+  }
+
   const nextQuestion = () => {
     if (currentQuestion < (currentExam.questions?.length || 0) - 1) {
       setCurrentQuestion(currentQuestion + 1)
     }
   }
 
+  const jumpToQuestion = (index) => {
+    setCurrentQuestion(index)
+  }
+
   const submitExam = async () => {
+    const total = currentExam?.questions?.length || 0
+    const unanswered = Array.from({ length: total }, (_, index) => index + 1).filter((index) => !answers[index - 1])
+
+    if (unanswered.length) {
+      const confirmRes = await Taro.showModal({
+        title: '仍有未作答题目',
+        content: `第 ${unanswered.join('、')} 题尚未作答，确认现在提交吗？`,
+        confirmText: '确认提交',
+      })
+      if (!confirmRes.confirm) return
+    }
+
     try {
       const studentId = Taro.getStorageSync('studentId')
       await api.post(`/exam/exams/${currentExam.id}/submit/`, { answers, student_id: studentId })
       Taro.showToast({ title: '提交成功', icon: 'success' })
+      const examId = currentExam.id
       setCurrentExam(null)
+      setCurrentQuestion(0)
+      setAnswers({})
+      setTimeout(() => {
+        Taro.navigateTo({ url: `/pages/exam-result/index?examId=${examId}` })
+      }, 300)
     } catch (e) {
       Taro.showToast({ title: '提交失败', icon: 'none' })
     }
@@ -83,11 +111,27 @@ export default function Exam() {
 
   if (currentExam) {
     const question = currentExam.questions?.[currentQuestion]
+    const answeredCount = Object.keys(answers).length
     return (
       <View className="exam-container">
         <View className="exam-header">
           <Text className="title">{currentExam.name}</Text>
           <Text className="progress">{currentQuestion + 1}/{currentExam.questions?.length || 0}</Text>
+        </View>
+        <View className="exam-summary">
+          <Text className="summary-item">已作答 {answeredCount} 题</Text>
+          <Text className="summary-item">未作答 {(currentExam.questions?.length || 0) - answeredCount} 题</Text>
+        </View>
+        <View className="question-nav">
+          {currentExam.questions?.map((_, index) => (
+            <View
+              key={index}
+              className={`nav-item ${currentQuestion === index ? 'active' : ''} ${answers[index] ? 'answered' : ''}`}
+              onClick={() => jumpToQuestion(index)}
+            >
+              <Text>{index + 1}</Text>
+            </View>
+          ))}
         </View>
         <View className="question-card">
           <Text className="q-title">第{currentQuestion + 1}题</Text>
@@ -102,6 +146,7 @@ export default function Exam() {
           </RadioGroup>
         </View>
         <View className="exam-actions">
+          <Button className="secondary-btn" disabled={currentQuestion === 0} onClick={prevQuestion}>上一题</Button>
           {currentQuestion < (currentExam.questions?.length || 0) - 1 ? (
             <Button className="next-btn" onClick={nextQuestion}>下一题</Button>
           ) : (

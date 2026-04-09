@@ -50,6 +50,11 @@ export const useUserStore = defineStore('user', () => {
   const roles = ref([])
 
   const isLoggedIn = computed(() => !!token.value)
+  const roleCodes = computed(() => (userInfo.value?.roles || []).map(role => role.code))
+  const isAdminConsoleUser = computed(() => {
+    if (userInfo.value?.is_superuser) return true
+    return roleCodes.value.includes('admin')
+  })
 
   async function login(username, password) {
     const res = await api.post('/users/login', { username, password }, { silentError: true })
@@ -85,7 +90,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  return { token, userInfo, roles, isLoggedIn, login, logout, refreshToken }
+  return { token, userInfo, roles, roleCodes, isLoggedIn, isAdminConsoleUser, login, logout, refreshToken }
 })
 
 export { api }

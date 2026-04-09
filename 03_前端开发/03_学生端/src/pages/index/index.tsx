@@ -8,6 +8,8 @@ export default function Index() {
   const [userInfo, setUserInfo] = useState<any>(null)
   const [schedules, setSchedules] = useState<any[]>([])
   const [hoursAccounts, setHoursAccounts] = useState<any[]>([])
+  const [scores, setScores] = useState<any[]>([])
+  const [exams, setExams] = useState<any[]>([])
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
@@ -29,10 +31,16 @@ export default function Index() {
         return
       }
       Taro.setStorageSync('studentId', student.id)
-      const scheduleRes = await api.get(`/edu/students/${student.id}/schedules/`)
+      const [scheduleRes, hoursRes, scoreRes, examRes] = await Promise.all([
+        api.get(`/edu/students/${student.id}/schedules/`),
+        api.get('/edu/hours/accounts/', { student: student.id }),
+        api.get('/exam/scores/', { student_id: student.id }),
+        api.get('/exam/exams/'),
+      ])
       setSchedules(scheduleRes || [])
-      const hoursRes = await api.get('/edu/hours/accounts/', { student: student.id })
       setHoursAccounts(hoursRes.results || hoursRes || [])
+      setScores(scoreRes.results || scoreRes || [])
+      setExams(examRes.results || examRes || [])
     } catch (e) { console.error(e) }
   }
 
@@ -60,7 +68,35 @@ export default function Index() {
     }
   }
 
+  const getScheduleStatus = (schedule) => {
+    const now = new Date().getTime()
+    const startAt = new Date(`${schedule.date}T${schedule.start_time}`).getTime()
+    const endAt = new Date(`${schedule.date}T${schedule.end_time}`).getTime()
+    if (now < startAt) return 'upcoming'
+    if (now > endAt) return 'finished'
+    return 'ongoing'
+  }
+
+  const getScheduleStatusText = (schedule) => {
+    const status = getScheduleStatus(schedule)
+    if (status === 'upcoming') return '未开始'
+    if (status === 'ongoing') return '可进入'
+    return '已结束'
+  }
+
+  const handleScheduleAction = (schedule) => {
+    const status = getScheduleStatus(schedule)
+    if (status === 'ongoing') {
+      handleJoinClass(schedule)
+      return
+    }
+    Taro.navigateTo({ url: `/pages/schedule-detail/index?id=${schedule.id}` })
+  }
+
   const totalHours = hoursAccounts.reduce((sum, acc) => sum + (acc.remaining_hours || 0), 0)
+  const upcomingSchedules = schedules.filter((item) => item.status === 'scheduled')
+  const availableExams = exams.filter((item) => item.status !== 'ended')
+  const latestScore = scores[0]?.score ?? '-'
 
   return (
     <View className="index">
@@ -76,15 +112,37 @@ export default function Index() {
         <Text className="unit">课时</Text>
       </View>
 
+      <View className="dashboard-grid">
+        <View className="dashboard-card">
+          <Text className="dashboard-label">待上课程</Text>
+          <Text className="dashboard-value">{upcomingSchedules.length}</Text>
+          <Text className="dashboard-desc">最近课程尽在课次详情</Text>
+        </View>
+        <View className="dashboard-card">
+          <Text className="dashboard-label">待参加考试</Text>
+          <Text className="dashboard-value">{availableExams.length}</Text>
+          <Text className="dashboard-desc">进入考试中心查看安排</Text>
+        </View>
+        <View className="dashboard-card full">
+          <Text className="dashboard-label">最近成绩</Text>
+          <Text className="dashboard-value">{latestScore}</Text>
+          <Text className="dashboard-desc">最近一次考试成绩与排名可在成绩页查看</Text>
+        </View>
+      </View>
+
       <View className="section">
         <Text className="section-title">今日课程</Text>
-        {schedules.length > 0 ? (
-          schedules.map((item, index) => (
+        {upcomingSchedules.length > 0 ? (
+          upcomingSchedules.slice(0, 3).map((item, index) => (
             <View className="schedule-card" key={index}>
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>
               <View className="course-name">{item.course_name}</View>
-              <Button className="join-btn" onClick={() => handleJoinClass(item)}>进入课堂</Button>
+              <Text className={`schedule-status ${getScheduleStatus(item)}`}>{getScheduleStatusText(item)}</Text>
+              <Button className="join-btn secondary" onClick={() => Taro.navigateTo({ url: `/pages/schedule-detail/index?id=${item.id}` })}>查看详情</Button>
+              <Button className="join-btn" onClick={() => handleScheduleAction(item)}>
+                {getScheduleStatus(item) === 'ongoing' ? '进入课堂' : getScheduleStatus(item) === 'upcoming' ? '查看准备' : '查看回放'}
+              </Button>
             </View>
           ))
         ) : (

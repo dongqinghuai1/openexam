@@ -6,9 +6,10 @@ from django.contrib.auth import authenticate
 from django.db.models import Count, Sum
 from django.utils import timezone
 from .models import User, Role, Permission, Menu, OperationLog, Notification
-from .serializers import UserSerializer, UserCreateSerializer, RoleSerializer, MenuSerializer, PermissionSerializer, NotificationSerializer
+from .serializers import UserSerializer, UserCreateSerializer, RoleSerializer, MenuSerializer, PermissionSerializer, NotificationSerializer, SendSmsCodeSerializer, RegisterSerializer, ResetPasswordSerializer
 from .serializers_log import OperationLogSerializer
 from .authentication import generate_token, refresh_access_token
+from .verification import generate_verify_code, store_verify_code, verify_code, clear_verify_code, send_email_code, ensure_role, create_related_profile
 
 
 class LoginView(APIView):
@@ -33,6 +34,89 @@ class LoginView(APIView):
             'expires_in': token_data['expires_in'],
             'user': UserSerializer(user).data
         })
+
+
+class SendSmsCodeView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = SendSmsCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        scene = serializer.validated_data['scene']
+
+        if scene == 'register' and User.objects.filter(email=email).exists():
+            return Response({'error': '该邮箱已注册'}, status=status.HTTP_400_BAD_REQUEST)
+        if scene == 'reset_password' and not User.objects.filter(email=email).exists():
+            return Response({'error': '该邮箱未注册'}, status=status.HTTP_400_BAD_REQUEST)
+
+        code = generate_verify_code()
+        send_email_code(email, code, '注册' if scene == 'register' else '找回密码')
+        store_verify_code(scene, email, code)
+        return Response({'message': '验证码发送成功'})
+
+
+class RegisterView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if User.objects.filter(username=data['username']).exists():
+            return Response({'error': '用户名已存在'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=data['email']).exists():
+            return Response({'error': '邮箱已注册'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(phone=data['phone']).exists():
+            return Response({'error': '手机号已注册'}, status=status.HTTP_400_BAD_REQUEST)
+        if not verify_code('register', data['email'], data['verify_code']):
+            return Response({'error': '邮箱验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_status = 'inactive' if data['role'] == 'teacher' else 'active'
+        user = User.objects.create(
+            username=data['username'],
+            phone=data['phone'],
+            status=user_status,
+            email=data['email'],
+        )
+        user.set_password(data['password'])
+        user.save()
+
+        role_map = {
+            'student': ('student', '学生'),
+            'parent': ('parent', '家长'),
+            'teacher': ('teacher', '教师'),
+        }
+        role = ensure_role(*role_map[data['role']])
+        user.roles.add(role)
+        create_related_profile(user, data['role'], data)
+        clear_verify_code('register', data['email'])
+
+        return Response({
+            'message': '注册成功' if data['role'] != 'teacher' else '注册成功，教师账号需审核后启用',
+            'status': user.status,
+        })
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        user = User.objects.filter(email=data['email']).first()
+        if not user:
+            return Response({'error': '该邮箱未注册'}, status=status.HTTP_400_BAD_REQUEST)
+        if not verify_code('reset_password', data['email'], data['verify_code']):
+            return Response({'error': '邮箱验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(data['new_password'])
+        user.save(update_fields=['password'])
+        clear_verify_code('reset_password', data['email'])
+        return Response({'message': '密码重置成功'})
 
 
 class UserViewSet(viewsets.ModelViewSet):

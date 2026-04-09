@@ -16,6 +16,10 @@ module.exports = {
     router: {
       mode: 'hash'
     },
+    devServer: {
+      port: 3002,
+      host: '0.0.0.0'
+    },
     publicPath: '/',
     staticDirectory: 'static'
   }

@@ -68,6 +68,7 @@ export default function Schedule() {
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>
               <View className="course-name">{item.course_name}</View>
+              <Button className="start-btn" onClick={() => Taro.navigateTo({ url: `/pages/schedule-detail/index?id=${item.id}` })}>查看详情</Button>
               <Button className="start-btn" onClick={() => handleStartClass(item)}>开始上课</Button>
             </View>
           ))

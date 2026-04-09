@@ -31,6 +31,8 @@ services:
       context: ./04_后端开发/03_业务代码
       dockerfile: Dockerfile
     container_name: eduadmin-backend
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     environment:
@@ -55,6 +57,45 @@ services:
     container_name: eduadmin-frontend
     ports:
       - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - eduadmin_net
+    restart: unless-stopped
+
+  teacher-portal:
+    build:
+      context: ./03_前端开发/02_教师端
+      dockerfile: Dockerfile
+    container_name: eduadmin-teacher-portal
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - eduadmin_net
+    restart: unless-stopped
+
+  student-portal:
+    build:
+      context: ./03_前端开发/03_学生端
+      dockerfile: Dockerfile
+    container_name: eduadmin-student-portal
+    ports:
+      - "3002:80"
+    depends_on:
+      - backend
+    networks:
+      - eduadmin_net
+    restart: unless-stopped
+
+  parent-portal:
+    build:
+      context: ./03_前端开发/04_家长端
+      dockerfile: Dockerfile
+    container_name: eduadmin-parent-portal
+    ports:
+      - "3003:80"
     depends_on:
       - backend
     networks:

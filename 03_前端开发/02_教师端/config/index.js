@@ -32,6 +32,10 @@ module.exports = {
       mode: 'hash',
       customRoutes: {}
     },
+    devServer: {
+      port: 3001,
+      host: '0.0.0.0'
+    },
     publicPath: '/',
     staticDirectory: 'static',
     postcss: {
