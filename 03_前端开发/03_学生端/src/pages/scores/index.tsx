@@ -13,8 +13,9 @@ export default function Scores() {
 
   const fetchScores = async () => {
     try {
-      const res = await api.get('/exam/scores/', { student_id: 1 })
-      setScores(res.data?.results || res.data || [])
+      const studentId = Taro.getStorageSync('studentId')
+      const res = await api.get('/exam/scores/', { student_id: studentId })
+      setScores(res.results || res || [])
     } catch (e) { console.error(e) }
   }
 
@@ -37,7 +38,7 @@ export default function Scores() {
         {scores.length > 0 ? (
           scores.map((item: any, index: number) => (
             <View className="score-card" key={index}>
-              <View className="exam-name">{item.exam?.name || '考试'}</View>
+              <View className="exam-name">{item.exam_name || item.exam?.name || '考试'}</View>
               <View className="score-info">
                 <View className="score-item">
                   <Text className="label">得分</Text>

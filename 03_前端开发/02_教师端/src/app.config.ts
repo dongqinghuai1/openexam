@@ -4,7 +4,9 @@ export default defineAppConfig({
     'pages/index/index',
     'pages/schedule/index',
     'pages/students/index',
-    'pages/recordings/index'
+    'pages/recordings/index',
+    'pages/link/index',
+    'pages/profile/index'
   ],
   window: {
     navigationBarTitleText: '教师端',

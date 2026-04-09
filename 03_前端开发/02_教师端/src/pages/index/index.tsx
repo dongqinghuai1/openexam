@@ -5,9 +5,8 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Index() {
-  const [userInfo, setUserInfo] = useState(null)
-  const [schedules, setSchedules] = useState([])
-  const [teacherId, setTeacherId] = useState(null)
+  const [userInfo, setUserInfo] = useState<any>(null)
+  const [schedules, setSchedules] = useState<any[]>([])
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
@@ -28,9 +27,8 @@ export default function Index() {
         Taro.showToast({ title: '未找到教师档案', icon: 'none' })
         return
       }
-      setTeacherId(teacher.id)
       const scheduleRes = await api.get(`/edu/teachers/${teacher.id}/schedules/`)
-      setSchedules(scheduleRes || scheduleRes.data || [])
+      setSchedules(scheduleRes || [])
     } catch (e) {
       console.error(e)
     }
@@ -42,12 +40,33 @@ export default function Index() {
     Taro.redirectTo({ url: '/pages/login/index' })
   }
 
-  const handleStartClass = (schedule) => {
-    Taro.showToast({ title: `课堂功能开发中: ${schedule.id}`, icon: 'none' })
+  const handleStartClass = async (schedule) => {
+    try {
+      const meetingList = await api.get('/classroom/meeting_rooms/', { page_size: 100 })
+      const meetings = meetingList.results || meetingList || []
+      let meeting = meetings.find((item) => item.schedule === schedule.id || item.schedule_id === schedule.id)
+
+      if (!meeting) {
+        meeting = await api.post('/classroom/meeting_rooms/create_meeting/', { schedule_id: schedule.id })
+      }
+
+      const meetingId = meeting.id
+      const activeMeeting = meeting.status === 'ongoing' ? meeting : await api.post(`/classroom/meeting_rooms/${meetingId}/start_meeting/`)
+      if (activeMeeting.join_url) {
+        Taro.navigateTo({
+          url: `/pages/link/index?title=${encodeURIComponent('课堂入口')}&type=classroom&url=${encodeURIComponent(activeMeeting.join_url)}`
+        })
+      } else {
+        Taro.showToast({ title: '课堂已开始', icon: 'success' })
+      }
+      fetchTeacherAndSchedules(Taro.getStorageSync('userInfo'))
+    } catch (e: any) {
+      Taro.showToast({ title: e.message || '开始上课失败', icon: 'none' })
+    }
   }
 
   const handleProfile = () => {
-    Taro.showToast({ title: '个人中心开发中', icon: 'none' })
+    Taro.navigateTo({ url: '/pages/profile/index' })
   }
 
   return (

@@ -6,7 +6,8 @@ export default defineAppConfig({
     'pages/exam/index',
     'pages/recordings/index',
     'pages/scores/index',
-    'pages/profile/index'
+    'pages/profile/index',
+    'pages/link/index'
   ],
   window: {
     navigationBarTitleText: '学生端',

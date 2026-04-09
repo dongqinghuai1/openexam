@@ -2,9 +2,10 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
+from django.db.models import Q
 from .models import Question, Paper, Exam, ExamAnswer, ScoreRecord
 from .serializers import QuestionSerializer, PaperSerializer, ExamSerializer, ScoreRecordSerializer
-from edu.models import Student
+from edu.models import Student, Teacher
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
@@ -36,13 +37,49 @@ class ExamViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return super().get_permissions()
 
+    def _get_user_phone(self, user):
+        return getattr(user, 'phone', None) or getattr(user, 'username', None)
+
+    def _get_role_codes(self, user):
+        return set(user.roles.values_list('code', flat=True))
+
+    def _get_role_names(self, user):
+        return set(user.roles.values_list('name', flat=True))
+
+    def _is_admin(self, user):
+        role_codes = self._get_role_codes(user)
+        role_names = self._get_role_names(user)
+        return user.is_superuser or 'admin' in role_codes or '管理员' in role_names
+
     def get_queryset(self):
         queryset = Exam.objects.select_related('paper', 'edu_class').all().order_by('-start_time')
         user = getattr(self.request, 'user', None)
-        path = getattr(self.request, 'path', '')
-        if user and user.is_authenticated and 'api/exam/exams' in path and 'admin' not in path:
+        if not user or not user.is_authenticated or self._is_admin(user):
             return queryset
-        return queryset
+
+        user_phone = self._get_user_phone(user)
+        role_codes = self._get_role_codes(user)
+        role_names = self._get_role_names(user)
+        filters = Q(pk__in=[])
+
+        if 'teacher' in role_codes or '教师' in role_names:
+            teacher_ids = Teacher.objects.filter(phone=user_phone).values_list('id', flat=True)
+            filters |= Q(edu_class__teacher_id__in=teacher_ids)
+
+        if 'student' in role_codes or '学生' in role_names:
+            student_ids = Student.objects.filter(phone=user_phone).values_list('id', flat=True)
+            filters |= Q(
+                edu_class__class_students__student_id__in=student_ids,
+                edu_class__class_students__status='studying',
+            )
+
+        if 'parent' in role_codes or '家长' in role_names:
+            filters |= Q(
+                edu_class__class_students__student__parent_phone=user_phone,
+                edu_class__class_students__status='studying',
+            )
+
+        return queryset.filter(filters).distinct()
 
     @action(detail=True, methods=['post'])
     def publish(self, request, pk=None):
@@ -64,6 +101,14 @@ class ExamViewSet(viewsets.ModelViewSet):
             if not student:
                 return Response({'error': '缺少 student_id，且系统中不存在学生数据'}, status=status.HTTP_400_BAD_REQUEST)
             student_id = student.id
+
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return Response({'error': '学生不存在'}, status=status.HTTP_404_NOT_FOUND)
+
+        if exam.edu_class and not exam.edu_class.class_students.filter(student=student, status='studying').exists():
+            return Response({'error': '当前学生不在本场考试所属班级中'}, status=status.HTTP_403_FORBIDDEN)
 
         questions = list(exam.paper.questions.all().order_by('paperquestion__sort', 'id'))
         if not questions:
@@ -124,12 +169,54 @@ class ScoreRecordViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ScoreRecord.objects.all()
     serializer_class = ScoreRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
-    filterset_fields = ['exam']
+    filterset_fields = ['exam', 'student_id']
+
+    def _get_user_phone(self, user):
+        return getattr(user, 'phone', None) or getattr(user, 'username', None)
+
+    def _get_role_codes(self, user):
+        return set(user.roles.values_list('code', flat=True))
+
+    def _get_role_names(self, user):
+        return set(user.roles.values_list('name', flat=True))
+
+    def _is_admin(self, user):
+        role_codes = self._get_role_codes(user)
+        role_names = self._get_role_names(user)
+        return user.is_superuser or 'admin' in role_codes or '管理员' in role_names
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related('exam', 'exam__edu_class', 'exam__edu_class__teacher')
+        user = self.request.user
+
+        if self._is_admin(user):
+            return queryset
+
+        user_phone = self._get_user_phone(user)
+        role_codes = self._get_role_codes(user)
+        role_names = self._get_role_names(user)
+        filters = Q(pk__in=[])
+
+        if 'teacher' in role_codes or '教师' in role_names:
+            teacher_ids = Teacher.objects.filter(phone=user_phone).values_list('id', flat=True)
+            filters |= Q(exam__edu_class__teacher_id__in=teacher_ids)
+
+        if 'student' in role_codes or '学生' in role_names:
+            student_ids = list(Student.objects.filter(phone=user_phone).values_list('id', flat=True))
+            filters |= Q(student_id__in=student_ids)
+
+        if 'parent' in role_codes or '家长' in role_names:
+            student_ids = list(Student.objects.filter(parent_phone=user_phone).values_list('id', flat=True))
+            filters |= Q(student_id__in=student_ids)
+
+        return queryset.filter(filters).distinct()
 
     @action(detail=False, methods=['get'])
     def by_student(self, request):
         """按学生查询"""
+        queryset = self.filter_queryset(self.get_queryset())
         student_id = request.query_params.get('student_id')
-        scores = ScoreRecord.objects.filter(student_id=student_id)
-        serializer = self.get_serializer(scores, many=True)
+        if student_id:
+            queryset = queryset.filter(student_id=student_id)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

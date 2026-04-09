@@ -2,6 +2,24 @@ import Taro from '@tarojs/taro'
 
 const baseURL = 'http://127.0.0.1:8000/api'
 
+const unwrap = (data: any) => {
+  if (data && typeof data === 'object' && 'data' in data && Object.keys(data).length <= 4) {
+    return data.data
+  }
+  return data
+}
+
+const buildQuery = (params?: Record<string, any>) => {
+  if (!params) return ''
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return
+    searchParams.append(key, String(value))
+  })
+  const query = searchParams.toString()
+  return query ? `?${query}` : ''
+}
+
 class Request {
   async request(url: string, options: any = {}) {
     const token = Taro.getStorageSync('token')
@@ -19,18 +37,18 @@ class Request {
         header,
         ...options,
       })
-      return res.data
+      if (res.statusCode >= 400) {
+        const message = unwrap(res.data)?.error || unwrap(res.data)?.message || '请求失败'
+        throw new Error(message)
+      }
+      return unwrap(res.data)
     } catch (e) {
       throw e
     }
   }
 
   get(url: string, params?: any) {
-    let query = ''
-    if (params) {
-      query = '?' + Object.keys(params).map(k => `${k}=${params[k]}`).join('&')
-    }
-    return this.request(url + query, { method: 'GET' })
+    return this.request(url + buildQuery(params), { method: 'GET' })
   }
 
   post(url: string, data?: any) {

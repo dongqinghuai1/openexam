@@ -5,9 +5,9 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Scores() {
-  const [children, setChildren] = useState([])
-  const [selectedChild, setSelectedChild] = useState(null)
-  const [scores, setScores] = useState([])
+  const [children, setChildren] = useState<any[]>([])
+  const [selectedChild, setSelectedChild] = useState<any>(null)
+  const [scores, setScores] = useState<any[]>([])
 
   useEffect(() => {
     fetchChildren()
@@ -15,8 +15,10 @@ export default function Scores() {
 
   const fetchChildren = async () => {
     try {
-      const res = await api.get('/edu/students/')
-      const students = res.data?.results || res.data || []
+      const user = Taro.getStorageSync('userInfo')
+      const phone = user?.phone || user?.username
+      const res = await api.get('/edu/students/', { parent_phone: phone })
+      const students = res.results || res || []
       setChildren(students)
       if (students.length > 0) {
         setSelectedChild(students[0])
@@ -28,7 +30,7 @@ export default function Scores() {
   const fetchScores = async (studentId) => {
     try {
       const res = await api.get('/exam/scores/', { student_id: studentId })
-      setScores(res.data?.results || res.data || [])
+      setScores(res.results || res || [])
     } catch (e) { console.error(e) }
   }
 
@@ -70,7 +72,7 @@ export default function Scores() {
         {scores.length > 0 ? (
           scores.map((item, index) => (
             <View className="score-card" key={index}>
-              <View className="exam-name">{item.exam?.name || '考试'}</View>
+              <View className="exam-name">{item.exam_name || item.exam?.name || '考试'}</View>
               <View className="score-info">
                 <View className="score-item">
                   <Text className="label">得分</Text>

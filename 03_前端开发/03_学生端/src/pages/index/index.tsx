@@ -5,10 +5,9 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Index() {
-  const [userInfo, setUserInfo] = useState(null)
-  const [schedules, setSchedules] = useState([])
-  const [hoursAccounts, setHoursAccounts] = useState([])
-  const [studentId, setStudentId] = useState(null)
+  const [userInfo, setUserInfo] = useState<any>(null)
+  const [schedules, setSchedules] = useState<any[]>([])
+  const [hoursAccounts, setHoursAccounts] = useState<any[]>([])
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
@@ -29,22 +28,36 @@ export default function Index() {
         Taro.showToast({ title: '未找到学生档案', icon: 'none' })
         return
       }
-      setStudentId(student.id)
+      Taro.setStorageSync('studentId', student.id)
       const scheduleRes = await api.get(`/edu/students/${student.id}/schedules/`)
-      setSchedules(scheduleRes || scheduleRes.data || [])
+      setSchedules(scheduleRes || [])
       const hoursRes = await api.get('/edu/hours/accounts/', { student: student.id })
-      setHoursAccounts(hoursRes.results || hoursRes.data?.results || hoursRes.data || [])
+      setHoursAccounts(hoursRes.results || hoursRes || [])
     } catch (e) { console.error(e) }
   }
 
   const handleLogout = () => {
     Taro.removeStorageSync('token')
     Taro.removeStorageSync('userInfo')
+    Taro.removeStorageSync('studentId')
     Taro.redirectTo({ url: '/pages/login/index' })
   }
 
-  const handleJoinClass = (schedule) => {
-    Taro.showToast({ title: `课堂功能开发中: ${schedule.id}`, icon: 'none' })
+  const handleJoinClass = async (schedule) => {
+    try {
+      const meetingList = await api.get('/classroom/meeting_rooms/', { page_size: 100 })
+      const meetings = meetingList.results || meetingList || []
+      const meeting = meetings.find((item) => item.schedule === schedule.id || item.schedule_id === schedule.id)
+      if (!meeting?.join_url) {
+        Taro.showToast({ title: '当前课程尚未开放进入', icon: 'none' })
+        return
+      }
+      Taro.navigateTo({
+        url: `/pages/link/index?title=${encodeURIComponent('课堂入口')}&type=classroom&url=${encodeURIComponent(meeting.join_url)}`
+      })
+    } catch (e: any) {
+      Taro.showToast({ title: e.message || '进入课堂失败', icon: 'none' })
+    }
   }
 
   const totalHours = hoursAccounts.reduce((sum, acc) => sum + (acc.remaining_hours || 0), 0)

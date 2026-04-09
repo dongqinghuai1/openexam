@@ -1,0 +1,58 @@
+.children-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 30px;
+}
+
+.title,
+.subtitle,
+.name,
+.line {
+  display: block;
+}
+
+.title {
+  font-size: 20px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.82);
+}
+
+.content {
+  padding: 20px;
+}
+
+.child-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.line {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}

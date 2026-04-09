@@ -53,7 +53,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     """学生管理视图"""
     queryset = Student.objects.all()
     permission_classes = [permissions.IsAuthenticated]
-    filterset_fields = ['status', 'gender', 'grade']
+    filterset_fields = ['status', 'gender', 'grade', 'phone', 'parent_phone']
     search_fields = ['name', 'phone', 'parent_phone']
 
     def get_serializer_class(self):
@@ -160,7 +160,13 @@ class ScheduleViewSet(viewsets.ModelViewSet):
     queryset = Schedule.objects.all()
     serializer_class = ScheduleSerializer
     permission_classes = [permissions.IsAuthenticated]
-    filterset_fields = ['edu_class', 'teacher', 'course', 'date', 'status']
+    filterset_fields = {
+        'edu_class': ['exact'],
+        'teacher': ['exact'],
+        'course': ['exact'],
+        'date': ['exact', 'gte', 'lte'],
+        'status': ['exact'],
+    }
 
     def perform_create(self, serializer):
         schedule = serializer.save(created_by=self.request.user)

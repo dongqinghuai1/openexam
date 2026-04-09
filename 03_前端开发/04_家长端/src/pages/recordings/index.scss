@@ -1,0 +1,92 @@
+.recordings-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 30px;
+}
+
+.title {
+  display: block;
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+}
+
+.subtitle {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.content {
+  padding: 20px;
+}
+
+.recording-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.class-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.course-name {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.date,
+.duration {
+  font-size: 12px;
+  color: #999;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.status.ready {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.status.pending {
+  background: #fff3e0;
+  color: #ff9800;
+}
+
+.play-btn {
+  font-size: 14px;
+  color: #667eea;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}

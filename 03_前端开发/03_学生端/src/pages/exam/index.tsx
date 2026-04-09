@@ -5,10 +5,19 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Exam() {
-  const [exams, setExams] = useState([])
-  const [currentExam, setCurrentExam] = useState(null)
+  const [exams, setExams] = useState<any[]>([])
+  const [currentExam, setCurrentExam] = useState<any>(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers] = useState({})
+  const [answers, setAnswers] = useState<Record<number, string>>({})
+
+  const isExamAvailable = (exam: any) => {
+    if (exam.status === 'ended') return false
+    const now = new Date().getTime()
+    const startAt = exam.start_time ? new Date(exam.start_time).getTime() : 0
+    const endAt = exam.end_time ? new Date(exam.end_time).getTime() : 0
+    if (endAt && endAt < now) return false
+    return !startAt || startAt <= now
+  }
 
   useEffect(() => {
     fetchExams()
@@ -16,12 +25,36 @@ export default function Exam() {
 
   const fetchExams = async () => {
     try {
+      const studentId = Taro.getStorageSync('studentId')
+      if (!studentId) {
+        setExams([])
+        return
+      }
+
+      const scheduleRes = await api.get(`/edu/students/${studentId}/schedules/`)
+      const schedules = scheduleRes || []
+      const classIds = new Set(schedules.map((item: any) => item.edu_class).filter(Boolean))
+
+      if (!classIds.size) {
+        setExams([])
+        return
+      }
+
       const res = await api.get('/exam/exams/')
-      setExams(res.data?.results || res.data || [])
-    } catch (e) { console.error(e) }
+      const list = res.results || res || []
+      setExams(
+        list.filter((item) => item.edu_class && classIds.has(item.edu_class) && item.status !== 'ended')
+      )
+    } catch (e: any) {
+      Taro.showToast({ title: e.message || '获取考试失败', icon: 'none' })
+    }
   }
 
   const startExam = (exam) => {
+    if (!isExamAvailable(exam)) {
+      Taro.showToast({ title: '考试尚未开始', icon: 'none' })
+      return
+    }
     setCurrentExam(exam)
     setCurrentQuestion(0)
     setAnswers({})
@@ -39,7 +72,8 @@ export default function Exam() {
 
   const submitExam = async () => {
     try {
-      await api.post(`/exam/exams/${currentExam.id}/submit/`, { answers })
+      const studentId = Taro.getStorageSync('studentId')
+      await api.post(`/exam/exams/${currentExam.id}/submit/`, { answers, student_id: studentId })
       Taro.showToast({ title: '提交成功', icon: 'success' })
       setCurrentExam(null)
     } catch (e) {
@@ -85,14 +119,18 @@ export default function Exam() {
         {exams.length > 0 ? (
           exams.map((exam, index) => (
             <View className="exam-card" key={index}>
-              <View className="exam-name">{exam.name}</View>
-              <View className="exam-info">
-                <Text>试卷: {exam.paper_name}</Text>
-                <Text>时间: {exam.start_time} - {exam.end_time}</Text>
-              </View>
-              <Button className="start-btn" onClick={() => startExam(exam)}>开始答题</Button>
-            </View>
-          ))
+               <View className="exam-name">{exam.name}</View>
+               <View className="exam-info">
+                  <Text>试卷: {exam.paper_name}</Text>
+                  <Text>班级: {exam.class_name || '-'}</Text>
+                  <Text>时间: {exam.start_time} - {exam.end_time}</Text>
+                  <Text>状态: {isExamAvailable(exam) ? '可参加' : '未开始'}</Text>
+               </View>
+               <Button className="start-btn" disabled={!isExamAvailable(exam)} onClick={() => startExam(exam)}>
+                 {isExamAvailable(exam) ? '开始答题' : '等待开始'}
+               </Button>
+             </View>
+           ))
         ) : (
           <Text className="empty">暂无考试</Text>
         )}

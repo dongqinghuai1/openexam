@@ -5,9 +5,9 @@ import api from '../../utils/api'
 import './index.scss'
 
 export default function Index() {
-  const [userInfo, setUserInfo] = useState(null)
-  const [children, setChildren] = useState([])
-  const [schedules, setSchedules] = useState([])
+  const [userInfo, setUserInfo] = useState<any>(null)
+  const [children, setChildren] = useState<any[]>([])
+  const [schedules, setSchedules] = useState<any[]>([])
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
@@ -21,8 +21,9 @@ export default function Index() {
 
   const fetchChildren = async (user) => {
     try {
-      const res = await api.get('/edu/students/', { parent_phone: userInfo?.phone })
-      const list = res.results || res.data?.results || res.data || []
+      const phone = user?.phone || user?.username
+      const res = await api.get('/edu/students/', { parent_phone: phone })
+      const list = res.results || res || []
       setChildren(list)
       fetchTodaySchedules(list)
     } catch (e) { console.error(e) }
@@ -31,8 +32,9 @@ export default function Index() {
   const fetchTodaySchedules = async (studentList) => {
     try {
       const res = await api.get('/edu/schedules/', { date: new Date().toISOString().split('T')[0] })
-      const list = res.results || res.data?.results || res.data || []
-      setSchedules(list.filter(item => studentList.some(student => student.id === item.student_id || student.id === item.student)))
+      const list = res.results || res || []
+      const classIds = new Set(studentList.flatMap(student => (student.class_name ? [student.class_name] : [])))
+      setSchedules(list.filter(item => classIds.has(item.class_name)))
     } catch (e) { console.error(e) }
   }
 
@@ -41,14 +43,6 @@ export default function Index() {
     Taro.removeStorageSync('userInfo')
     Taro.redirectTo({ url: '/pages/login/index' })
   }
-
-  const handlePlaceholder = (name) => {
-    Taro.showToast({ title: `${name}开发中`, icon: 'none' })
-  }
-
-  const childSchedules = schedules.filter((s) => 
-    children.some((c) => c.id === s.student_id)
-  )
 
   return (
     <View className="index">
@@ -74,8 +68,8 @@ export default function Index() {
 
       <View className="section">
         <Text className="section-title">今日课程</Text>
-        {childSchedules.length > 0 ? (
-          childSchedules.map((item, index) => (
+        {schedules.length > 0 ? (
+          schedules.map((item, index) => (
             <View className="schedule-card" key={index}>
               <View className="time">{item.start_time?.substring(0,5)} - {item.end_time?.substring(0,5)}</View>
               <View className="class-name">{item.class_name}</View>
@@ -90,11 +84,11 @@ export default function Index() {
       <View className="section">
         <Text className="section-title">快捷功能</Text>
         <View className="menu-grid">
-          <View className="menu-item" onClick={() => handlePlaceholder('孩子管理')}>
+          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/children/index' })}>
             <Text className="icon">👶</Text>
             <Text className="label">孩子管理</Text>
           </View>
-          <View className="menu-item" onClick={() => handlePlaceholder('课程日历')}>
+          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/calendar/index' })}>
             <Text className="icon">📅</Text>
             <Text className="label">课程日历</Text>
           </View>
@@ -102,7 +96,7 @@ export default function Index() {
             <Text className="icon">📊</Text>
             <Text className="label">成绩查询</Text>
           </View>
-          <View className="menu-item" onClick={() => handlePlaceholder('录屏回放')}>
+          <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/recordings/index' })}>
             <Text className="icon">📹</Text>
             <Text className="label">录屏回放</Text>
           </View>

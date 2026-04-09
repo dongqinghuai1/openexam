@@ -2,7 +2,11 @@ export default defineAppConfig({
   pages: [
     'pages/login/index',
     'pages/index/index',
-    'pages/scores/index'
+    'pages/scores/index',
+    'pages/recordings/index',
+    'pages/link/index',
+    'pages/children/index',
+    'pages/calendar/index'
   ],
   window: {
     navigationBarTitleText: '家长端',
@@ -22,6 +26,10 @@ export default defineAppConfig({
       {
         pagePath: 'pages/scores/index',
         text: '成绩'
+      },
+      {
+        pagePath: 'pages/recordings/index',
+        text: '回放'
       }
     ]
   }
