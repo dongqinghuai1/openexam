@@ -8,7 +8,13 @@ from .models import User
 
 class JWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
-        token = request.META.get('HTTP_AUTHORIZATION', '').replace('Bearer ', '')
+        auth_header = ''
+        if hasattr(request, 'headers'):
+            auth_header = request.headers.get('Authorization', '') or request.headers.get('authorization', '')
+        if not auth_header:
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '') or request.META.get('Authorization', '')
+
+        token = auth_header.replace('Bearer ', '').strip()
         if not token:
             return None
 

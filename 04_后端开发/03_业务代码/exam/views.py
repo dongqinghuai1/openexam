@@ -1,11 +1,13 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
+from django.db import transaction
 from .models import Question, Paper, Exam, ExamAnswer, ScoreRecord
 from .serializers import QuestionSerializer, PaperSerializer, ExamSerializer, ScoreRecordSerializer
-from edu.models import Student, Teacher
+from edu.models import Student, Teacher, Subject
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
@@ -15,6 +17,261 @@ class QuestionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['subject', 'type', 'difficulty', 'status']
     search_fields = ['content']
+
+    def get_queryset(self):
+        return Question.objects.select_related('subject', 'created_by').all().order_by('-id')
+
+    def _build_question_workbook(self, questions=None, template=False):
+        try:
+            from openpyxl import Workbook
+        except ImportError as exc:
+            raise RuntimeError('当前环境缺少 openpyxl，无法导出 Excel') from exc
+
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = '题库'
+        headers = ['科目编码', '章节', '题型', '题目内容', '选项', '答案', '解析', '难度', '分值', '状态']
+        worksheet.append(headers)
+
+        if template:
+            worksheet.append([
+                'MATH',
+                '函数基础',
+                'single',
+                '已知 f(x)=x+1，f(2)=?',
+                'A.1\nB.2\nC.3\nD.4',
+                'C',
+                '把 x=2 代入即可',
+                'easy',
+                5,
+                'true',
+            ])
+            worksheet.append([
+                'MATH',
+                '函数基础',
+                'essay',
+                '请简述一次函数图像的特点',
+                '',
+                '略',
+                '围绕斜率和截距作答',
+                'medium',
+                10,
+                'true',
+            ])
+
+        for item in questions or []:
+            options = ''
+            if isinstance(item.options, dict):
+                options = '\n'.join([f'{key}. {value}' for key, value in item.options.items()])
+            worksheet.append([
+                item.subject.code,
+                item.chapter,
+                item.type,
+                item.content,
+                options,
+                item.answer,
+                item.analysis,
+                item.difficulty,
+                item.score,
+                'true' if item.status else 'false',
+            ])
+
+        return workbook
+
+    def _parse_options(self, raw_text):
+        lines = [line.strip() for line in str(raw_text or '').splitlines() if line.strip()]
+        options = {}
+        for index, line in enumerate(lines):
+            key = chr(65 + index)
+            options[key] = line.replace(f'{key}.', '').replace(f'{key}、', '').strip()
+        return options
+
+    def _load_import_rows(self, upload):
+        try:
+            from openpyxl import load_workbook
+        except ImportError:
+            raise RuntimeError('当前环境缺少 openpyxl，无法导入 Excel')
+
+        workbook = load_workbook(upload)
+        worksheet = workbook.active
+        return list(worksheet.iter_rows(min_row=2, values_only=True))
+
+    def _validate_import_rows(self, rows):
+        preview = []
+        created_count = 0
+        updated_count = 0
+        errors = []
+
+        for row_index, row in enumerate(rows, start=2):
+            subject_code, chapter, qtype, content, options_text, answer, analysis, difficulty, score, enabled = (list(row[:10]) + [None] * 10)[:10]
+            if not content:
+                continue
+
+            row_errors = []
+            subject = Subject.objects.filter(code=str(subject_code or '').strip()).first()
+            if not subject:
+                row_errors.append(f'科目编码不存在: {subject_code}')
+
+            payload = {
+                'subject': subject,
+                'chapter': str(chapter or '').strip(),
+                'type': str(qtype or 'single').strip(),
+                'content': str(content).strip(),
+                'options': self._parse_options(options_text),
+                'answer': str(answer or '').strip(),
+                'analysis': str(analysis or '').strip(),
+                'difficulty': str(difficulty or 'medium').strip(),
+                'score': int(score or 5),
+                'status': str(enabled).strip().lower() not in ['false', '0', 'no'],
+            }
+
+            if payload['type'] not in ['single', 'multiple', 'blank', 'essay']:
+                row_errors.append(f'题型不支持: {payload["type"]}')
+            if payload['difficulty'] not in ['easy', 'medium', 'hard']:
+                row_errors.append(f'难度不支持: {payload["difficulty"]}')
+            if not payload['answer']:
+                row_errors.append('答案不能为空')
+            if payload['score'] <= 0:
+                row_errors.append('分值必须大于 0')
+
+            exists = bool(subject and Question.objects.filter(subject=subject, content=payload['content']).exists())
+            action = '更新' if exists else '新增'
+            if exists:
+                updated_count += 1
+            else:
+                created_count += 1
+
+            preview.append({
+                'row': row_index,
+                'subject_code': subject_code,
+                'chapter': payload['chapter'],
+                'content': payload['content'],
+                'type': payload['type'],
+                'options_text': str(options_text or ''),
+                'answer': payload['answer'],
+                'analysis': payload['analysis'],
+                'difficulty': payload['difficulty'],
+                'score': payload['score'],
+                'status': payload['status'],
+                'action': action,
+                'errors': row_errors,
+            })
+
+            if row_errors:
+                errors.extend([f'第 {row_index} 行{error}' for error in row_errors])
+
+        return {
+            'created': created_count,
+            'updated': updated_count,
+            'errors': errors,
+            'preview': preview,
+        }
+
+    @action(detail=False, methods=['get'])
+    def export(self, request):
+        questions = self.filter_queryset(self.get_queryset())
+        workbook = self._build_question_workbook(questions=questions)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=questions.xlsx'
+        workbook.save(response)
+        return response
+
+    @action(detail=False, methods=['get'])
+    def template(self, request):
+        workbook = self._build_question_workbook(template=True)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=question_import_template.xlsx'
+        workbook.save(response)
+        return response
+
+    @action(detail=False, methods=['post'])
+    def import_preview(self, request):
+        upload = request.FILES.get('file')
+        if not upload:
+            return Response({'error': '请上传 Excel 文件'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            rows = self._load_import_rows(upload)
+        except RuntimeError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if not rows:
+            return Response({'error': '导入文件为空'}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = self._validate_import_rows(rows)
+        return Response(result)
+
+    @transaction.atomic
+    @action(detail=False, methods=['post'])
+    def import_file(self, request):
+        upload = request.FILES.get('file')
+        if not upload:
+            return Response({'error': '请上传 Excel 文件'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            rows = self._load_import_rows(upload)
+        except RuntimeError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if not rows:
+            return Response({'error': '导入文件为空'}, status=status.HTTP_400_BAD_REQUEST)
+
+        preview_result = self._validate_import_rows(rows)
+        blocking_errors = [item for item in preview_result['preview'] if item['errors']]
+        if blocking_errors:
+            return Response({
+                'error': '导入文件存在校验错误，请先修正后再导入',
+                **preview_result,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        created_count = 0
+        update_count = 0
+
+        for row_index, row in enumerate(rows, start=2):
+            subject_code, chapter, qtype, content, options_text, answer, analysis, difficulty, score, enabled = row[:10]
+            if not content:
+                continue
+
+            try:
+                subject = Subject.objects.get(code=str(subject_code).strip())
+            except Subject.DoesNotExist:
+                continue
+
+            payload = {
+                'subject': subject,
+                'chapter': str(chapter or '').strip(),
+                'type': str(qtype or 'single').strip(),
+                'content': str(content).strip(),
+                'options': self._parse_options(options_text),
+                'answer': str(answer or '').strip(),
+                'analysis': str(analysis or '').strip(),
+                'difficulty': str(difficulty or 'medium').strip(),
+                'score': int(score or 5),
+                'status': str(enabled).strip().lower() not in ['false', '0', 'no'],
+            }
+
+            if not payload['answer']:
+                continue
+
+            question, created = Question.objects.update_or_create(
+                subject=subject,
+                content=payload['content'],
+                defaults={
+                    **payload,
+                    'created_by': request.user,
+                }
+            )
+            if created:
+                created_count += 1
+            else:
+                update_count += 1
+
+        return Response({
+            'message': '导入完成',
+            'created': created_count,
+            'updated': update_count,
+            'errors': [],
+        })
 
 
 class PaperViewSet(viewsets.ModelViewSet):

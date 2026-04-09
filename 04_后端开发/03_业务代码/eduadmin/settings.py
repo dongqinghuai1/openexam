@@ -145,7 +145,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'eduadmin.pagination.StandardResultsSetPagination',
     'PAGE_SIZE': 10,
     'EXCEPTION_HANDLER': 'eduadmin.exceptions.custom_exception_handler',
 }
