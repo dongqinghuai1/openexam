@@ -68,6 +68,10 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         role_ids = validated_data.pop('role_ids', [])
         password = validated_data.pop('password', None)
+        if validated_data.get('phone', '') == '':
+            validated_data['phone'] = None
+        if validated_data.get('email', '') == '':
+            validated_data['email'] = None
         user = User(**validated_data)
         if password:
             user.set_password(password)
@@ -80,6 +84,10 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         role_ids = validated_data.pop('role_ids', None)
         password = validated_data.pop('password', None)
+        if validated_data.get('phone', None) == '':
+            validated_data['phone'] = None
+        if validated_data.get('email', None) == '':
+            validated_data['email'] = None
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
@@ -102,6 +110,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         role_ids = validated_data.pop('role_ids', [])
         password = validated_data.pop('password')
+        if validated_data.get('phone', '') == '':
+            validated_data['phone'] = None
+        if validated_data.get('email', '') == '':
+            validated_data['email'] = None
         user = User(**validated_data)
         user.set_password(password)
         user.save()

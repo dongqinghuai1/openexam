@@ -62,6 +62,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
 import { useRouter } from 'vue-router'
+import { extractErrorMessage } from '@/utils/error'
 
 const router = useRouter()
 
@@ -98,7 +99,7 @@ async function fetchData() {
     const res = await api.get('/exam/exams/')
     tableData.value = res.data.results || res.data
   } catch (e) {
-    ElMessage.error('获取考试失败')
+    ElMessage.error(extractErrorMessage(e, '获取考试失败'))
   } finally {
     loading.value = false
   }
@@ -122,7 +123,7 @@ async function handlePublish(row) {
     ElMessage.success('发布成功')
     fetchData()
   } catch (e) {
-    ElMessage.error('发布失败')
+    ElMessage.error(extractErrorMessage(e, '发布考试失败'))
   }
 }
 
@@ -137,7 +138,7 @@ async function handleDelete(row) {
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error('删除失败')
+    if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '删除考试失败'))
   }
 }
 

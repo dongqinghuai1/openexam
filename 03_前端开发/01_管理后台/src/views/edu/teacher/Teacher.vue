@@ -126,6 +126,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -156,7 +157,7 @@ async function fetchData() {
     tableData.value = res.data.results || res.data
     pagination.total = res.data.count || tableData.value.length
   } catch (e) {
-    ElMessage.error('获取数据失败')
+    ElMessage.error(extractErrorMessage(e, '获取教师数据失败'))
   } finally {
     loading.value = false
   }
@@ -166,7 +167,7 @@ async function fetchSubjects() {
   try {
     const res = await api.get('/edu/subjects/')
     subjects.value = res.data.results || res.data
-  } catch (e) { console.error(e) }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取科目列表失败')) }
 }
 
 function handleQuery() { pagination.page = 1; fetchData() }
@@ -193,7 +194,7 @@ async function handleDelete(row) {
     await api.delete(`/edu/teachers/${row.id}/`)
     ElMessage.success('删除成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('删除失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '删除教师失败')) }
 }
 
 async function handleSubmit() {
@@ -210,7 +211,7 @@ async function handleSubmit() {
         }
         dialogVisible.value = false
         fetchData()
-      } catch (e) { ElMessage.error('操作失败') }
+      } catch (e) { ElMessage.error(extractErrorMessage(e, '保存教师失败')) }
     }
   })
 }

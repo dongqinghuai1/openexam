@@ -199,6 +199,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -267,7 +268,7 @@ async function fetchData() {
     tableData.value = res.data.results || res.data
     pagination.total = res.data.count || tableData.value.length
   } catch (e) {
-    ElMessage.error('获取数据失败')
+    ElMessage.error(extractErrorMessage(e, '获取学生数据失败'))
   } finally {
     loading.value = false
   }
@@ -377,7 +378,7 @@ async function handleDelete(row) {
     await api.delete(`/edu/students/${row.id}/`)
     ElMessage.success('删除成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('删除失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '删除学生失败')) }
 }
 
 async function handleSubmit() {
@@ -394,7 +395,7 @@ async function handleSubmit() {
         }
         dialogVisible.value = false
         fetchData()
-      } catch (e) { ElMessage.error('操作失败') }
+      } catch (e) { ElMessage.error(extractErrorMessage(e, '保存学生失败')) }
     }
   })
 }

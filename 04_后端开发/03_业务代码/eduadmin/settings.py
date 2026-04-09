@@ -147,7 +147,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    'EXCEPTION_HANDLER': 'eduadmin.exceptions.custom_exception_handler',
 }
 
 CORS_ALLOW_ALL_ORIGINS = True

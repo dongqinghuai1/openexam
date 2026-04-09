@@ -80,6 +80,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { api } from '@/stores/user'
 import * as echarts from 'echarts'
+import { extractErrorMessage } from '@/utils/error'
 
 const stats = ref({
   todayRevenue: 0,
@@ -181,7 +182,7 @@ async function fetchChartData() {
         areaStyle: { color: 'rgba(64, 158, 255, 0.2)' }
       }]
     })
-  } catch (e) { console.error(e) }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取收入统计失败')) }
 }
 
 onMounted(() => {

@@ -74,6 +74,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -121,7 +122,7 @@ async function fetchData() {
     const treeData = res.data
     tableData.value = flattenTree(treeData)
     allMenus.value = flattenForSelect(treeData)
-  } catch (e) { ElMessage.error('获取数据失败') }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取菜单数据失败')) }
   finally { loading.value = false }
 }
 
@@ -170,7 +171,7 @@ async function handleDelete(row) {
     await api.delete(`/users/menus/${row.id}/`)
     ElMessage.success('删除成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('删除失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '删除菜单失败')) }
 }
 
 async function handleSubmit() {
@@ -198,7 +199,7 @@ async function handleSubmit() {
         }
         dialogVisible.value = false
         fetchData()
-      } catch (e) { ElMessage.error('操作失败') }
+      } catch (e) { ElMessage.error(extractErrorMessage(e, '保存菜单失败')) }
     }
   })
 }

@@ -129,6 +129,10 @@ class RoleViewSet(viewsets.ModelViewSet):
         instance.status = False
         instance.save()
 
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
+
 
 class MenuViewSet(viewsets.ModelViewSet):
     """菜单管理视图"""

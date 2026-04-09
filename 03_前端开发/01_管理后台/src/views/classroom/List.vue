@@ -63,6 +63,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -100,7 +101,7 @@ async function fetchData() {
       }
     })
   } catch (e) {
-    ElMessage.error('获取课堂数据失败')
+    ElMessage.error(extractErrorMessage(e, '获取课堂数据失败'))
   } finally {
     loading.value = false
   }
@@ -165,7 +166,7 @@ async function handleViewPlayback(row) {
       window.open(playbackRes.data.url, '_blank')
     }
   } catch (e) {
-    ElMessage.error('获取回放失败')
+    ElMessage.error(extractErrorMessage(e, '获取回放失败'))
   }
 }
 

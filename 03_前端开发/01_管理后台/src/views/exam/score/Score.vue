@@ -36,6 +36,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { api } from '@/stores/user'
 import { useRoute } from 'vue-router'
+import { extractErrorMessage } from '@/utils/error'
 
 const route = useRoute()
 
@@ -55,7 +56,7 @@ async function fetchData() {
     const res = await api.get('/exam/scores/', { params: queryForm })
     tableData.value = res.data.results || res.data
   } catch (e) {
-    ElMessage.error('获取成绩失败')
+    ElMessage.error(extractErrorMessage(e, '获取成绩失败'))
   } finally {
     loading.value = false
   }

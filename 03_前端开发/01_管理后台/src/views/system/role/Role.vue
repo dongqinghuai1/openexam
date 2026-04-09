@@ -73,6 +73,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -96,7 +97,7 @@ async function fetchData() {
   try {
     const res = await api.get('/users/roles/')
     tableData.value = res.data.results || res.data
-  } catch (e) { ElMessage.error('获取数据失败') }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取角色数据失败')) }
   finally { loading.value = false }
 }
 
@@ -104,7 +105,7 @@ async function fetchPermissions() {
   try {
     const res = await api.get('/users/permissions/')
     permissions.value = res.data.results || res.data
-  } catch (e) { console.error(e) }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取权限列表失败')) }
 }
 
 function handleAdd() {
@@ -131,7 +132,7 @@ async function handleDelete(row) {
     await api.delete(`/users/roles/${row.id}/`)
     ElMessage.success('删除成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('删除失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '删除角色失败')) }
 }
 
 async function handleSubmit() {
@@ -148,7 +149,7 @@ async function handleSubmit() {
         }
         dialogVisible.value = false
         fetchData()
-      } catch (e) { ElMessage.error('操作失败') }
+      } catch (e) { ElMessage.error(extractErrorMessage(e, '保存角色失败')) }
     }
   })
 }
@@ -159,7 +160,7 @@ async function handlePermSubmit() {
     await api.put(`/users/roles/${currentRoleId.value}/`, { permission_ids: checkedKeys })
     ElMessage.success('权限分配成功')
     permDialogVisible.value = false
-  } catch (e) { ElMessage.error('操作失败') }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '分配权限失败')) }
 }
 
 onMounted(() => { fetchData(); fetchPermissions() })

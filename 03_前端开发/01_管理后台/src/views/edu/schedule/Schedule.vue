@@ -219,6 +219,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
 import dayjs from 'dayjs'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -303,7 +304,7 @@ async function fetchData() {
     rescheduleRecords.value = rescheduleRes.data.results || rescheduleRes.data
     leaveRecords.value = leaveRes.data.results || leaveRes.data
   } catch (e) {
-    ElMessage.error('获取数据失败')
+    ElMessage.error(extractErrorMessage(e, '获取排课数据失败'))
   } finally {
     loading.value = false
   }
@@ -319,7 +320,7 @@ async function fetchOptions() {
     classes.value = clsRes.data.results || clsRes.data
     teachers.value = tRes.data.results || tRes.data
     courses.value = cRes.data.results || cRes.data
-  } catch (e) { console.error(e) }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取排课下拉数据失败')) }
 }
 
 function handleQuery() { pagination.page = 1; fetchData() }
@@ -345,7 +346,7 @@ async function handleCancel(row) {
     await api.delete(`/edu/schedules/${row.id}/`)
     ElMessage.success('取消成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('操作失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '取消排课失败')) }
 }
 
 async function handleComplete(row) {
@@ -379,7 +380,7 @@ async function handleReschedule(row) {
     scheduleOptions.value = list.filter(item => item.id !== row.id)
     rescheduleDialogVisible.value = true
   } catch (e) {
-    ElMessage.error('获取调课候选课次失败')
+    ElMessage.error(extractErrorMessage(e, '获取调课候选课次失败'))
   }
 }
 
@@ -398,7 +399,7 @@ async function handleLeave(row) {
       .map(item => item.student)
     leaveDialogVisible.value = true
   } catch (e) {
-    ElMessage.error('获取请假候选对象失败')
+    ElMessage.error(extractErrorMessage(e, '获取请假候选对象失败'))
   }
 }
 
@@ -442,7 +443,7 @@ async function approveReschedule(row) {
     ElMessage.success('调课审批已通过')
     fetchData()
   } catch (e) {
-    ElMessage.error(e.response?.data?.error || '审批失败')
+    ElMessage.error(extractErrorMessage(e, '调课审批失败'))
   }
 }
 
@@ -452,7 +453,7 @@ async function rejectReschedule(row) {
     ElMessage.success('调课已拒绝')
     fetchData()
   } catch (e) {
-    ElMessage.error(e.response?.data?.error || '操作失败')
+    ElMessage.error(extractErrorMessage(e, '拒绝调课失败'))
   }
 }
 
@@ -462,7 +463,7 @@ async function approveLeave(row) {
     ElMessage.success('请假审批已通过')
     fetchData()
   } catch (e) {
-    ElMessage.error(e.response?.data?.error || '审批失败')
+    ElMessage.error(extractErrorMessage(e, '请假审批失败'))
   }
 }
 
@@ -472,7 +473,7 @@ async function rejectLeave(row) {
     ElMessage.success('请假已拒绝')
     fetchData()
   } catch (e) {
-    ElMessage.error(e.response?.data?.error || '操作失败')
+    ElMessage.error(extractErrorMessage(e, '拒绝请假失败'))
   }
 }
 
@@ -490,7 +491,7 @@ async function handleSubmit() {
         }
         dialogVisible.value = false
         fetchData()
-      } catch (e) { ElMessage.error('操作失败') }
+      } catch (e) { ElMessage.error(extractErrorMessage(e, '保存排课失败')) }
     }
   })
 }

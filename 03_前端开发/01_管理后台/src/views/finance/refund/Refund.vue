@@ -66,6 +66,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -88,7 +89,7 @@ async function fetchData() {
     const res = await api.get('/finance/refunds/', { params: { ...queryForm, page: pagination.page, page_size: pagination.size } })
     tableData.value = res.data.results || res.data
     pagination.total = res.data.count || tableData.value.length
-  } catch (e) { ElMessage.error('获取数据失败') }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取退款数据失败')) }
   finally { loading.value = false }
 }
 
@@ -102,7 +103,7 @@ async function handleApprove(row) {
     await api.post(`/finance/refunds/${row.id}/approve/`)
     ElMessage.success('审批成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error(e.response?.data?.error || '操作失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '退款审批失败')) }
 }
 
 async function handleReject(row) {
@@ -111,7 +112,7 @@ async function handleReject(row) {
     await api.post(`/finance/refunds/${row.id}/reject/`)
     ElMessage.success('已拒绝')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error(e.response?.data?.error || '操作失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '退款拒绝失败')) }
 }
 
 onMounted(() => { fetchData() })

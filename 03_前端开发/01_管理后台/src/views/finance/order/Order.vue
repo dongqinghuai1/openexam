@@ -156,6 +156,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -208,7 +209,7 @@ async function fetchData() {
     const res = await api.get('/finance/orders/', { params: { ...queryForm, page: pagination.page, page_size: pagination.size } })
     tableData.value = res.data.results || res.data
     pagination.total = res.data.count || tableData.value.length
-  } catch (e) { ElMessage.error('获取数据失败') }
+  } catch (e) { ElMessage.error(extractErrorMessage(e, '获取订单数据失败')) }
   finally { loading.value = false }
 }
 
@@ -283,7 +284,7 @@ async function handlePay(row) {
     await api.post(`/finance/orders/${row.id}/pay/`)
     ElMessage.success('支付成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('支付失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '订单支付失败')) }
 }
 
 async function handleCancel(row) {
@@ -292,7 +293,7 @@ async function handleCancel(row) {
     await api.post(`/finance/orders/${row.id}/cancel/`)
     ElMessage.success('取消成功')
     fetchData()
-  } catch (e) { if (e !== 'cancel') ElMessage.error('操作失败') }
+  } catch (e) { if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '取消订单失败')) }
 }
 
 onMounted(async () => { await fetchOptions(); fetchData() })

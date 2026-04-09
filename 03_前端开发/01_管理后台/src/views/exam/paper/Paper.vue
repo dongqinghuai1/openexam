@@ -55,6 +55,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
+import { extractErrorMessage } from '@/utils/error'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -92,7 +93,7 @@ async function fetchData() {
     const res = await api.get('/exam/papers/')
     tableData.value = res.data.results || res.data
   } catch (e) {
-    ElMessage.error('获取试卷失败')
+    ElMessage.error(extractErrorMessage(e, '获取试卷失败'))
   } finally {
     loading.value = false
   }
@@ -125,7 +126,7 @@ async function handleDelete(row) {
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error('删除失败')
+    if (e !== 'cancel') ElMessage.error(extractErrorMessage(e, '删除试卷失败'))
   }
 }
 
