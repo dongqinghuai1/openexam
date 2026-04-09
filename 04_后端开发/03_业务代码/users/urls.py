@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, RoleViewSet, MenuViewSet, PermissionViewSet, OperationLogViewSet, LoginView
+from .views import UserViewSet, RoleViewSet, MenuViewSet, PermissionViewSet, OperationLogViewSet, NotificationViewSet, DashboardView, LoginView
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'', UserViewSet, basename='user')
@@ -17,4 +17,8 @@ urlpatterns = [
     path('menus/<int:pk>/', MenuViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='menu-detail'),
     path('permissions/', PermissionViewSet.as_view({'get': 'list'}), name='permission-list'),
     path('operation-logs/', OperationLogViewSet.as_view({'get': 'list'}), name='operation-log-list'),
+    path('notifications/', NotificationViewSet.as_view({'get': 'list', 'post': 'create'}), name='notification-list'),
+    path('notifications/<int:pk>/', NotificationViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='notification-detail'),
+    path('notifications/<int:pk>/publish/', NotificationViewSet.as_view({'post': 'publish'}), name='notification-publish'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard-data'),
 ]

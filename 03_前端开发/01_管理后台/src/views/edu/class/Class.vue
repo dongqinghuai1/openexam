@@ -1,9 +1,12 @@
 <template>
-  <div class="class-page">
-    <el-card>
+  <div class="class-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>班级管理</span>
+          <div>
+            <div class="page-title">班级管理</div>
+            <div class="page-subtitle">围绕班级进行学生编组、教师绑定与课次组织。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新建班级</el-button>
         </div>
       </template>
@@ -30,20 +33,20 @@
       </el-form>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="name" label="班级名称" width="150" />
-        <el-table-column prop="code" label="班级编码" width="100" />
-        <el-table-column prop="course_name" label="课程" width="150" />
-        <el-table-column prop="teacher_name" label="授课教师" width="100" />
-        <el-table-column prop="max_students" label="最大人数" width="100" />
-        <el-table-column prop="student_count" label="当前人数" width="100" />
-        <el-table-column prop="start_date" label="开班日期" width="120" />
-        <el-table-column prop="end_date" label="结课日期" width="120" />
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="name" label="班级名称" min-width="180" />
+        <el-table-column prop="code" label="班级编码" min-width="140" />
+        <el-table-column prop="course_name" label="课程" min-width="160" />
+        <el-table-column prop="teacher_name" label="授课教师" min-width="120" />
+        <el-table-column prop="max_students" label="最大人数" width="100" align="center" />
+        <el-table-column prop="student_count" label="当前人数" width="100" align="center" />
+        <el-table-column prop="start_date" label="开班日期" min-width="130" />
+        <el-table-column prop="end_date" label="结课日期" min-width="130" />
+        <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 'open' ? 'success' : 'info'">{{ row.status === 'open' ? '开班' : '结课' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="260" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="success" link @click="handleAddStudent(row)">添加学生</el-button>
@@ -64,8 +67,8 @@
       />
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="760px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="96px" class="two-col-form">
         <el-form-item label="班级名称" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
@@ -112,16 +115,16 @@
         </div>
       </template>
       <el-table :data="classStudents" stripe>
-        <el-table-column prop="student.name" label="姓名" width="100" />
-        <el-table-column prop="student.phone" label="手机号" width="120" />
-        <el-table-column prop="student.grade" label="年级" width="80" />
-        <el-table-column prop="join_date" label="入班日期" width="120" />
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="student.name" label="姓名" min-width="120" />
+        <el-table-column prop="student.phone" label="手机号" min-width="140" />
+        <el-table-column prop="student.grade" label="年级" width="90" align="center" />
+        <el-table-column prop="join_date" label="入班日期" min-width="130" />
+        <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 'studying' ? 'success' : 'info'">{{ row.status === 'studying' ? '在读' : row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="120" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="danger" link @click="handleRemoveStudent(row)">移除</el-button>
           </template>
@@ -345,6 +348,9 @@ onMounted(() => { fetchData(); fetchOptions() })
 
 <style scoped>
 .class-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.search-form { margin-bottom: 20px; }
+.two-col-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+.two-col-form :deep(.el-form-item) { margin-bottom: 18px; }
+@media (max-width: 900px) {
+  .two-col-form { grid-template-columns: 1fr; }
+}
 </style>

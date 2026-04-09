@@ -116,3 +116,25 @@ class OperationLog(models.Model):
         verbose_name = '操作日志'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
+
+
+class Notification(models.Model):
+    """通知消息"""
+    title = models.CharField(max_length=100, verbose_name='标题')
+    content = models.TextField(verbose_name='内容')
+    level = models.CharField(max_length=20, choices=[('info', '普通'), ('warning', '提醒'), ('urgent', '紧急')], default='info', verbose_name='级别')
+    target_type = models.CharField(max_length=20, choices=[('all', '全体'), ('teacher', '教师'), ('student', '学生'), ('parent', '家长'), ('admin', '管理员')], default='all', verbose_name='发送对象')
+    status = models.CharField(max_length=20, choices=[('draft', '草稿'), ('published', '已发布')], default='draft', verbose_name='状态')
+    published_at = models.DateTimeField(null=True, blank=True, verbose_name='发布时间')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_notifications', verbose_name='创建人')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        db_table = 'tb_notification'
+        verbose_name = '通知消息'
+        verbose_name_plural = verbose_name
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title

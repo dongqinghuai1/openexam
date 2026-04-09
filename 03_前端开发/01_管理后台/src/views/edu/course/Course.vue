@@ -1,9 +1,12 @@
 <template>
-  <div class="course-page">
-    <el-card>
+  <div class="course-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>课程管理</span>
+          <div>
+            <div class="page-title">课程管理</div>
+            <div class="page-subtitle">整理课程编码、学科归属、定价与课时结构。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增课程</el-button>
         </div>
       </template>
@@ -30,9 +33,9 @@
       </el-form>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="name" label="课程名称" width="180" />
-        <el-table-column prop="code" label="课程编码" width="100" />
-        <el-table-column prop="subject_name" label="科目" width="100" />
+        <el-table-column prop="name" label="课程名称" min-width="220" />
+        <el-table-column prop="code" label="课程编码" width="130" />
+        <el-table-column prop="subject_name" label="科目" min-width="120" />
         <el-table-column prop="cover" label="封面" width="80">
           <template #default="{ row }">
             <el-image v-if="row.cover" :src="row.cover" style="width: 50px; height: 50px" fit="cover" />
@@ -40,8 +43,8 @@
           </template>
         </el-table-column>
         <el-table-column prop="total_hours" label="总课时" width="80" />
-        <el-table-column prop="duration" label="单次时长(分钟)" width="120" />
-        <el-table-column prop="price" label="价格" width="100">
+        <el-table-column prop="duration" label="单次时长(分钟)" width="140" />
+        <el-table-column prop="price" label="价格" width="110">
           <template #default="{ row }">¥{{ row.price }}</template>
         </el-table-column>
         <el-table-column prop="chapter_count" label="章节数" width="80" />
@@ -50,7 +53,7 @@
             <el-tag :type="row.status === 'active' ? 'success' : 'info'">{{ row.status === 'active' ? '在售' : '已下架' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="primary" link @click="handleView(row)">详情</el-button>
@@ -212,6 +215,4 @@ onMounted(() => { fetchData(); fetchSubjects() })
 
 <style scoped>
 .course-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.search-form { margin-bottom: 20px; }
 </style>

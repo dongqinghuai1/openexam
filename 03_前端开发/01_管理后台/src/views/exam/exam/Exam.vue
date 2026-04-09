@@ -1,22 +1,25 @@
 <template>
-  <div class="exam-page">
-    <el-card>
+  <div class="exam-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>考试管理</span>
+          <div>
+            <div class="page-title">考试管理</div>
+            <div class="page-subtitle">安排班级考试、试卷分配与成绩查看入口。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增考试</el-button>
         </div>
       </template>
 
       <el-table :data="tableData" v-loading="loading" stripe>
         <el-table-column prop="name" label="考试名称" min-width="180" />
-        <el-table-column prop="paper_name" label="试卷" width="160" />
-        <el-table-column prop="class_name" label="班级" width="160" />
+        <el-table-column prop="paper_name" label="试卷" min-width="180" />
+        <el-table-column prop="class_name" label="班级" min-width="160" />
         <el-table-column prop="subject_name" label="科目" width="120" />
         <el-table-column prop="start_time" label="开始时间" width="180" />
         <el-table-column prop="end_time" label="结束时间" width="180" />
         <el-table-column prop="status" label="状态" width="100" />
-        <el-table-column label="操作" width="180">
+        <el-table-column label="操作" width="220" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="success" link @click="handlePublish(row)">发布</el-button>
@@ -171,5 +174,4 @@ onMounted(async () => {
 
 <style scoped>
 .exam-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
 </style>

@@ -1,29 +1,32 @@
 <template>
-  <div class="menu-page">
-    <el-card>
+  <div class="menu-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>菜单管理</span>
+          <div>
+            <div class="page-title">菜单管理</div>
+            <div class="page-subtitle">维护导航层级、显示状态与权限标识，保持信息架构清晰。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增菜单</el-button>
         </div>
       </template>
 
       <el-table :data="tableData" v-loading="loading" row-key="id" stripe>
-        <el-table-column prop="name" label="菜单名称" width="200">
+        <el-table-column prop="name" label="菜单名称" min-width="240">
           <template #default="{ row }">
             <span :style="{ paddingLeft: (row._level || 0) * 20 + 'px' }">{{ row.name }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="path" label="路由" width="150" />
-        <el-table-column prop="component" label="组件" width="150" />
+        <el-table-column prop="path" label="路由" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="component" label="组件" min-width="200" show-overflow-tooltip />
         <el-table-column prop="sort" label="排序" width="80" />
         <el-table-column prop="visible" label="可见" width="80">
           <template #default="{ row }">
             <el-tag :type="row.visible ? 'success' : 'info'">{{ row.visible ? '是' : '否' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="permission" label="权限标识" width="150" />
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column prop="permission" label="权限标识" min-width="180" show-overflow-tooltip />
+        <el-table-column label="操作" width="220" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="success" link @click="handleAddChild(row)">添加子菜单</el-button>
@@ -209,5 +212,4 @@ onMounted(() => { fetchData() })
 
 <style scoped>
 .menu-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
 </style>

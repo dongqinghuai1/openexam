@@ -1,9 +1,12 @@
 <template>
-  <div class="order-page">
-    <el-card>
+  <div class="order-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>订单管理</span>
+          <div>
+            <div class="page-title">订单管理</div>
+            <div class="page-subtitle">跟踪订单创建、支付状态与退款动作，保持财务流转清晰可查。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增订单</el-button>
         </div>
       </template>
@@ -37,38 +40,38 @@
       </el-form>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="order_no" label="订单号" width="180" />
-        <el-table-column prop="student.name" label="学生姓名" width="100" />
-        <el-table-column prop="student.phone" label="手机号" width="120" />
-        <el-table-column label="课程/套餐" width="150">
+        <el-table-column prop="order_no" label="订单号" min-width="190" />
+        <el-table-column prop="student.name" label="学生姓名" min-width="120" />
+        <el-table-column prop="student.phone" label="手机号" min-width="140" />
+        <el-table-column label="课程/套餐" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
             {{ row.course?.name || row.course_package?.name || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="quantity" label="课时数" width="80" />
-        <el-table-column prop="amount" label="原价" width="100">
+        <el-table-column prop="quantity" label="课时数" width="90" align="center" />
+        <el-table-column prop="amount" label="原价" width="110" align="right">
           <template #default="{ row }">¥{{ row.amount }}</template>
         </el-table-column>
-        <el-table-column prop="discount" label="优惠" width="80">
+        <el-table-column prop="discount" label="优惠" width="100" align="right">
           <template #default="{ row }">¥{{ row.discount }}</template>
         </el-table-column>
-        <el-table-column prop="final_amount" label="实收" width="100">
+        <el-table-column prop="final_amount" label="实收" width="110" align="right">
           <template #default="{ row }">
             <span style="color: #f56c6c; font-weight: bold">¥{{ row.final_amount }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="payment_type" label="支付方式" width="80">
+        <el-table-column prop="payment_type" label="支付方式" width="100" align="center">
           <template #default="{ row }">
             <span>{{ getPaymentType(row.payment_type) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间" width="160" />
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column prop="created_at" label="创建时间" min-width="170" />
+        <el-table-column label="操作" width="220" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleView(row)">详情</el-button>
             <el-button v-if="row.status === 'pending'" type="success" link @click="handlePay(row)">支付</el-button>
@@ -90,8 +93,8 @@
       />
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px">
-      <el-form v-if="dialogMode === 'create'" ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="760px">
+      <el-form v-if="dialogMode === 'create'" ref="formRef" :model="form" :rules="rules" label-width="92px" class="two-col-form">
         <el-form-item label="学生" prop="student">
           <el-select v-model="form.student" filterable>
             <el-option v-for="item in students" :key="item.id" :label="`${item.name} (${item.phone})`" :value="item.id" />
@@ -134,7 +137,7 @@
         <el-descriptions-item label="状态">{{ getStatusText(currentOrder.status) }}</el-descriptions-item>
       </el-descriptions>
 
-      <el-form v-else ref="refundFormRef" :model="refundForm" :rules="refundRules" label-width="100px">
+      <el-form v-else ref="refundFormRef" :model="refundForm" :rules="refundRules" label-width="92px" class="single-col-form">
         <el-form-item label="退款金额" prop="amount">
           <el-input-number v-model="refundForm.amount" :min="0" :precision="2" />
         </el-form-item>
@@ -301,6 +304,10 @@ onMounted(async () => { await fetchOptions(); fetchData() })
 
 <style scoped>
 .order-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.search-form { margin-bottom: 20px; }
+.two-col-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+.two-col-form :deep(.el-form-item) { margin-bottom: 18px; }
+.single-col-form :deep(.el-form-item) { margin-bottom: 18px; }
+@media (max-width: 900px) {
+  .two-col-form { grid-template-columns: 1fr; }
+}
 </style>

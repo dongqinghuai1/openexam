@@ -46,6 +46,12 @@ const routes = [
             name: 'OperationLogManagement',
             component: () => import('../views/system/log/OperationLog.vue'),
             meta: { title: '操作日志' }
+          },
+          {
+            path: 'notifications',
+            name: 'NotificationManagement',
+            component: () => import('../views/system/notification/Notification.vue'),
+            meta: { title: '通知消息' }
           }
         ]
       },

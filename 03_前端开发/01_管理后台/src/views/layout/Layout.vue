@@ -1,16 +1,21 @@
 <template>
   <el-container class="layout-container">
-    <el-aside width="200px">
+    <el-aside width="264px" class="layout-aside">
       <div class="logo">
-        <h3>教务管理</h3>
+        <div class="logo-mark">EA</div>
+        <div class="logo-copy">
+          <strong>EduAdmin</strong>
+          <span>Apple-like Console</span>
+        </div>
       </div>
       <el-menu
         :default-active="activeMenu"
         router
         :unique-opened="true"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
+        background-color="transparent"
+        text-color="#667085"
+        active-text-color="#111827"
+        class="side-menu"
       >
         <template v-for="route in menus">
           <el-sub-menu v-if="route.children" :key="route.path" :index="route.path">
@@ -31,14 +36,16 @@
     </el-aside>
 
     <el-container>
-      <el-header>
+      <el-header class="layout-header">
         <div class="header-left">
+          <div class="header-title">{{ currentRoute.meta?.title || '控制台' }}</div>
           <el-breadcrumb separator="/">
             <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
             <el-breadcrumb-item v-if="currentRoute">{{ currentRoute.meta?.title }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <div class="status-pill">LOCAL DEMO</div>
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-icon><User /></el-icon>
@@ -54,7 +61,7 @@
         </div>
       </el-header>
 
-      <el-main>
+      <el-main class="layout-main">
         <router-view />
       </el-main>
     </el-container>
@@ -91,45 +98,150 @@ function handleCommand(command) {
 <style scoped>
 .layout-container {
   height: 100vh;
+  background: transparent;
 }
 
-.el-aside {
-  background-color: #304156;
+.layout-aside {
   overflow: hidden;
+  padding: 18px 14px;
+  background: rgba(255, 255, 255, 0.84);
+  border-right: 1px solid rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(16px);
 }
 
 .logo {
-  height: 60px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: #2b3a4a;
+  gap: 14px;
+  padding: 14px 14px 22px;
 }
 
-.logo h3 {
-  color: white;
-  font-size: 18px;
-  margin: 0;
+.logo-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f172a, #334155);
 }
 
-.el-header {
+.logo-copy strong {
+  display: block;
+  font-size: 19px;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.logo-copy span {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #98a2b3;
+  text-transform: uppercase;
+}
+
+.side-menu {
+  border-right: none;
+}
+
+.layout-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.82);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  padding: 0 28px;
+  backdrop-filter: blur(16px);
+}
+
+.header-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+  letter-spacing: -0.03em;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.status-pill {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(0, 113, 227, 0.06);
+  border: 1px solid rgba(0, 113, 227, 0.1);
+  color: #0071e3;
+  font-size: 12px;
+  letter-spacing: 0.14em;
 }
 
 .header-right .user-info {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
-.el-main {
-  background: #f0f2f5;
-  padding: 20px;
+:deep(.side-menu .el-sub-menu__title),
+:deep(.side-menu .el-menu-item) {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #475467 !important;
+}
+
+:deep(.side-menu .el-sub-menu__title .el-icon),
+:deep(.side-menu .el-menu-item .el-icon) {
+  width: 18px;
+  height: 18px;
+  margin-right: 2px;
+  color: #94a3b8;
+}
+
+:deep(.side-menu .el-menu-item.is-active),
+:deep(.side-menu .el-sub-menu__title:hover),
+:deep(.side-menu .el-menu-item:hover) {
+  color: #111827 !important;
+}
+
+:deep(.side-menu .el-menu-item.is-active .el-icon) {
+  color: #2563eb !important;
+}
+
+.layout-main {
+  padding: 22px;
+  background: transparent;
+}
+
+:deep(.el-menu-item),
+:deep(.el-sub-menu__title) {
+  border-radius: 14px;
+  margin-bottom: 6px;
+}
+
+:deep(.el-menu-item.is-active) {
+  background: rgba(0, 113, 227, 0.08) !important;
+}
+
+:deep(.el-breadcrumb__inner) {
+  color: #98a2b3 !important;
 }
 </style>

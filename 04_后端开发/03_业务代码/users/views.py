@@ -3,8 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
-from .models import User, Role, Permission, Menu, OperationLog
-from .serializers import UserSerializer, UserCreateSerializer, RoleSerializer, MenuSerializer, PermissionSerializer
+from django.db.models import Count, Sum
+from django.utils import timezone
+from .models import User, Role, Permission, Menu, OperationLog, Notification
+from .serializers import UserSerializer, UserCreateSerializer, RoleSerializer, MenuSerializer, PermissionSerializer, NotificationSerializer
 from .serializers_log import OperationLogSerializer
 from .authentication import generate_token, refresh_access_token
 
@@ -198,3 +200,72 @@ class OperationLogViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = OperationLogSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['username', 'method']
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_fields = ['status', 'level', 'target_type']
+
+    @action(detail=True, methods=['post'])
+    def publish(self, request, pk=None):
+        notification = self.get_object()
+        notification.status = 'published'
+        notification.published_at = timezone.now()
+        notification.save(update_fields=['status', 'published_at'])
+        return Response(self.get_serializer(notification).data)
+
+
+class DashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from edu.models import Student, Teacher, EduClass, Schedule
+        from finance.models import Order
+
+        today = timezone.now().date()
+        month_start = today.replace(day=1)
+
+        stats = {
+            'studentCount': Student.objects.count(),
+            'teacherCount': Teacher.objects.count(),
+            'classCount': EduClass.objects.count(),
+            'todayRevenue': Order.objects.filter(status='paid', paid_at__date=today).aggregate(total=Sum('final_amount'))['total'] or 0,
+        }
+
+        recent_enrollments = list(
+            Student.objects.order_by('-created_at').values('name', 'phone')[:5]
+        )
+        today_schedules = list(
+            Schedule.objects.filter(date=today).select_related('edu_class', 'course', 'teacher').order_by('start_time')[:8]
+            .values('date', 'start_time', 'end_time', 'edu_class__name', 'course__name', 'teacher__name')
+        )
+        notifications = list(
+            Notification.objects.filter(status='published').values('id', 'title', 'level', 'published_at')[:5]
+        )
+
+        return Response({
+            'stats': stats,
+            'recentEnrollments': [
+                {
+                    'name': item['name'],
+                    'phone': item['phone'],
+                    'course': '-',
+                    'date': ''
+                } for item in recent_enrollments
+            ],
+            'todaySchedules': [
+                {
+                    'time': f"{str(item['start_time'])[:5]}-{str(item['end_time'])[:5]}",
+                    'className': item['edu_class__name'],
+                    'course': item['course__name'],
+                    'teacher': item['teacher__name'],
+                } for item in today_schedules
+            ],
+            'notifications': notifications,
+            'monthSummary': {
+                'paidOrderCount': Order.objects.filter(status='paid', created_at__date__gte=month_start).count(),
+                'refundedOrderCount': Order.objects.filter(status='refunded', created_at__date__gte=month_start).count(),
+            }
+        })

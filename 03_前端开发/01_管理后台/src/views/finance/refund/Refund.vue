@@ -1,8 +1,11 @@
 <template>
-  <div class="refund-page">
-    <el-card>
+  <div class="refund-page page-shell">
+    <el-card class="surface-card">
       <template #header>
-        <span>退款管理</span>
+        <div>
+          <div class="page-title">退款管理</div>
+          <div class="page-subtitle">跟踪退款申请、审批进度和课时冻结联动。</div>
+        </div>
       </template>
 
       <el-form :inline="true" :model="queryForm" class="search-form">
@@ -25,19 +28,19 @@
       <el-table :data="tableData" v-loading="loading" stripe>
         <el-table-column prop="id" label="退款ID" width="80" />
         <el-table-column prop="order_no" label="订单号" width="180" />
-        <el-table-column prop="student_name" label="学生姓名" width="100" />
-        <el-table-column prop="amount" label="退款金额" width="100">
+        <el-table-column prop="student_name" label="学生姓名" min-width="120" />
+        <el-table-column prop="amount" label="退款金额" width="110">
           <template #default="{ row }">¥{{ row.amount }}</template>
         </el-table-column>
         <el-table-column prop="reason" label="退款原因" min-width="150" />
-        <el-table-column prop="applicant_name" label="申请人" width="100" />
+        <el-table-column prop="applicant_name" label="申请人" min-width="120" />
         <el-table-column prop="created_at" label="申请时间" width="160" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <template v-if="row.status === 'pending'">
               <el-button type="success" link @click="handleApprove(row)">批准</el-button>
@@ -120,5 +123,4 @@ onMounted(() => { fetchData() })
 
 <style scoped>
 .refund-page { padding: 20px; }
-.search-form { margin-bottom: 20px; }
 </style>

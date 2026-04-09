@@ -1,9 +1,12 @@
 <template>
-  <div class="student-page">
-    <el-card>
+  <div class="student-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>学生管理</span>
+          <div>
+            <div class="page-title">学生管理</div>
+            <div class="page-subtitle">查看学生状态、课时账户与家长信息，保持教务数据的连续性。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增学生</el-button>
         </div>
       </template>
@@ -30,21 +33,21 @@
       </el-form>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="name" label="姓名" width="100" />
-        <el-table-column prop="phone" label="手机号" width="120" />
-        <el-table-column prop="gender" label="性别" width="60">
+        <el-table-column prop="name" label="姓名" min-width="120" />
+        <el-table-column prop="phone" label="手机号" min-width="140" />
+        <el-table-column prop="gender" label="性别" width="72" align="center">
           <template #default="{ row }">{{ row.gender === 'male' ? '男' : row.gender === 'female' ? '女' : '-' }}</template>
         </el-table-column>
-        <el-table-column prop="grade" label="年级" width="80" />
-        <el-table-column prop="school" label="学校" />
-        <el-table-column prop="parent_name" label="家长姓名" width="100" />
-        <el-table-column prop="parent_phone" label="家长手机" width="120" />
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="grade" label="年级" width="90" align="center" />
+        <el-table-column prop="school" label="学校" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="parent_name" label="家长姓名" min-width="120" />
+        <el-table-column prop="parent_phone" label="家长手机" min-width="140" />
+        <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="210" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="primary" link @click="handleView(row)">详情</el-button>
@@ -66,8 +69,8 @@
       />
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="760px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="96px" class="two-col-form">
         <el-form-item label="姓名" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
@@ -121,7 +124,7 @@
       </el-form>
 
       <el-table :data="hoursAccounts" stripe>
-        <el-table-column prop="course_name" label="课程" />
+        <el-table-column prop="course_name" label="课程" min-width="160" />
         <el-table-column prop="total_hours" label="总课时" width="100" />
         <el-table-column prop="used_hours" label="已用" width="100" />
         <el-table-column prop="frozen_hours" label="冻结" width="100" />
@@ -129,7 +132,7 @@
         <el-table-column prop="remaining_hours" label="剩余" width="100" />
         <el-table-column prop="status" label="状态" width="100" />
         <el-table-column prop="expire_date" label="过期日期" width="120" />
-        <el-table-column label="操作" width="180">
+        <el-table-column label="操作" width="200" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="success" link @click="openAdjustDialog('gift', row)">赠课</el-button>
             <el-button type="warning" link @click="openAdjustDialog('freeze', row)">冻结</el-button>
@@ -141,12 +144,12 @@
       <el-divider>课时流水</el-divider>
 
       <el-table :data="hoursFlows" stripe>
-        <el-table-column prop="course_name" label="课程" />
+        <el-table-column prop="course_name" label="课程" min-width="160" />
         <el-table-column prop="type" label="类型" width="100" />
         <el-table-column prop="hours" label="课时数量" width="100" />
         <el-table-column prop="balance_before" label="变动前" width="100" />
         <el-table-column prop="balance_after" label="变动后" width="100" />
-        <el-table-column prop="note" label="备注" />
+        <el-table-column prop="note" label="备注" min-width="180" show-overflow-tooltip />
         <el-table-column prop="operator_name" label="操作人" width="100" />
         <el-table-column prop="created_at" label="时间" width="180" />
       </el-table>
@@ -405,6 +408,9 @@ onMounted(() => { fetchData() })
 
 <style scoped>
 .student-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.search-form { margin-bottom: 20px; }
+.two-col-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+.two-col-form :deep(.el-form-item) { margin-bottom: 18px; }
+@media (max-width: 900px) {
+  .two-col-form { grid-template-columns: 1fr; }
+}
 </style>

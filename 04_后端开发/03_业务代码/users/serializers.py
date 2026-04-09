@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Role, Permission, Menu, UserRole
+from .models import User, Role, Permission, Menu, UserRole, Notification
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -121,3 +121,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
             roles = Role.objects.filter(id__in=role_ids)
             user.roles.set(roles)
         return user
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    creator_name = serializers.CharField(source='created_by.username', read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = '__all__'
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            validated_data.setdefault('created_by', request.user)
+        return super().create(validated_data)

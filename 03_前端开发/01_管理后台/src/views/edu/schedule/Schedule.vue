@@ -1,9 +1,12 @@
 <template>
-  <div class="schedule-page">
-    <el-card>
+  <div class="schedule-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>排课管理</span>
+          <div>
+            <div class="page-title">排课管理</div>
+            <div class="page-subtitle">处理课次安排、完成状态、请假与调课审批。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新建排课</el-button>
         </div>
       </template>
@@ -45,19 +48,19 @@
       <el-divider />
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="date" label="日期" width="120" />
-        <el-table-column prop="start_time" label="开始时间" width="100" />
-        <el-table-column prop="end_time" label="结束时间" width="100" />
-        <el-table-column prop="class_name" label="班级" width="150" />
-        <el-table-column prop="course_name" label="课程" width="150" />
-        <el-table-column prop="teacher_name" label="教师" width="100" />
-        <el-table-column prop="room" label="教室" width="100" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="date" label="日期" min-width="130" />
+        <el-table-column prop="start_time" label="开始时间" width="110" align="center" />
+        <el-table-column prop="end_time" label="结束时间" width="110" align="center" />
+        <el-table-column prop="class_name" label="班级" min-width="160" />
+        <el-table-column prop="course_name" label="课程" min-width="160" />
+        <el-table-column prop="teacher_name" label="教师" min-width="120" />
+        <el-table-column prop="room" label="教室" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="warning" link @click="handleReschedule(row)">调课</el-button>
@@ -84,11 +87,11 @@
           <el-card>
             <template #header><span>调课审批</span></template>
             <el-table :data="rescheduleRecords" stripe>
-              <el-table-column prop="type" label="类型" width="100" />
-              <el-table-column prop="reason" label="原因" min-width="120" />
-              <el-table-column prop="status" label="状态" width="100" />
-              <el-table-column prop="applicant_name" label="申请人" width="100" />
-              <el-table-column label="操作" width="140">
+              <el-table-column prop="type" label="类型" width="100" align="center" />
+              <el-table-column prop="reason" label="原因" min-width="180" show-overflow-tooltip />
+              <el-table-column prop="status" label="状态" width="100" align="center" />
+              <el-table-column prop="applicant_name" label="申请人" min-width="120" />
+              <el-table-column label="操作" width="160" class-name="operation-column">
                 <template #default="{ row }">
                   <el-button v-if="row.status === 'pending'" type="success" link @click="approveReschedule(row)">批准</el-button>
                   <el-button v-if="row.status === 'pending'" type="danger" link @click="rejectReschedule(row)">拒绝</el-button>
@@ -101,12 +104,12 @@
           <el-card>
             <template #header><span>请假审批</span></template>
             <el-table :data="leaveRecords" stripe>
-              <el-table-column prop="type" label="类型" width="100" />
-              <el-table-column prop="reason" label="原因" min-width="120" />
-              <el-table-column prop="status" label="状态" width="100" />
-              <el-table-column prop="student_name" label="学生" width="100" />
-              <el-table-column prop="teacher_name" label="教师" width="100" />
-              <el-table-column label="操作" width="140">
+              <el-table-column prop="type" label="类型" width="100" align="center" />
+              <el-table-column prop="reason" label="原因" min-width="180" show-overflow-tooltip />
+              <el-table-column prop="status" label="状态" width="100" align="center" />
+              <el-table-column prop="student_name" label="学生" min-width="120" />
+              <el-table-column prop="teacher_name" label="教师" min-width="120" />
+              <el-table-column label="操作" width="160" class-name="operation-column">
                 <template #default="{ row }">
                   <el-button v-if="row.status === 'pending'" type="success" link @click="approveLeave(row)">批准</el-button>
                   <el-button v-if="row.status === 'pending'" type="danger" link @click="rejectLeave(row)">拒绝</el-button>
@@ -118,8 +121,8 @@
       </el-row>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="780px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="92px" class="two-col-form">
         <el-form-item label="班级" prop="edu_class">
           <el-select v-model="form.edu_class" placeholder="请选择">
             <el-option v-for="cls in classes" :key="cls.id" :label="cls.name" :value="cls.id" />
@@ -157,8 +160,8 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="rescheduleDialogVisible" title="调课申请" width="600px">
-      <el-form ref="rescheduleFormRef" :model="rescheduleForm" :rules="rescheduleRules" label-width="100px">
+    <el-dialog v-model="rescheduleDialogVisible" title="调课申请" width="680px">
+      <el-form ref="rescheduleFormRef" :model="rescheduleForm" :rules="rescheduleRules" label-width="92px" class="single-col-form">
         <el-form-item label="原课次">
           <el-input :model-value="currentScheduleLabel" disabled />
         </el-form-item>
@@ -184,8 +187,8 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="leaveDialogVisible" title="请假申请" width="600px">
-      <el-form ref="leaveFormRef" :model="leaveForm" :rules="leaveRules" label-width="100px">
+    <el-dialog v-model="leaveDialogVisible" title="请假申请" width="680px">
+      <el-form ref="leaveFormRef" :model="leaveForm" :rules="leaveRules" label-width="92px" class="single-col-form">
         <el-form-item label="请假类型" prop="type">
           <el-select v-model="leaveForm.type" placeholder="请选择">
             <el-option label="学生请假" value="student" />
@@ -501,12 +504,17 @@ onMounted(() => { fetchData(); fetchOptions() })
 
 <style scoped>
 .schedule-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.search-form { margin-bottom: 20px; }
-.calendar-cell { height: 100%; min-height: 60px; }
-.date-number { font-size: 12px; color: #999; }
-.schedule-list { margin-top: 5px; }
-.schedule-item { font-size: 12px; background: #e6f4ff; padding: 2px 5px; margin-bottom: 2px; border-radius: 3px; cursor: pointer; }
-.schedule-item:hover { background: #bae7ff; }
-.schedule-item .time { margin-right: 5px; }
+.two-col-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+.two-col-form :deep(.el-form-item) { margin-bottom: 18px; }
+.single-col-form :deep(.el-form-item) { margin-bottom: 18px; }
+.calendar-cell { min-height: 84px; display: flex; flex-direction: column; gap: 6px; }
+.date-number { font-size: 12px; color: #667085; }
+.schedule-list { display: flex; flex-direction: column; gap: 6px; }
+.schedule-item { padding: 6px 8px; border-radius: 12px; background: rgba(37,99,235,0.06); cursor: pointer; }
+.schedule-item:hover { background: rgba(37,99,235,0.12); }
+.schedule-item .time { display: block; font-size: 12px; color: #2563eb; }
+.schedule-item .name { display: block; margin-top: 2px; color: #111827; }
+@media (max-width: 900px) {
+  .two-col-form { grid-template-columns: 1fr; }
+}
 </style>

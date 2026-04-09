@@ -1,9 +1,12 @@
 <template>
-  <div class="user-page">
-    <el-card>
+  <div class="user-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>用户管理</span>
+          <div>
+            <div class="page-title">用户管理</div>
+            <div class="page-subtitle">统一管理后台账号、角色与状态，优先处理高频运营动作。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增用户</el-button>
         </div>
       </template>
@@ -28,30 +31,32 @@
       </el-form>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="username" label="用户名" width="120" />
-        <el-table-column prop="email" label="邮箱" width="180" />
-        <el-table-column prop="phone" label="手机号" width="120" />
+        <el-table-column prop="username" label="用户名" min-width="140" />
+        <el-table-column prop="email" label="邮箱" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="phone" label="手机号" min-width="140" />
         <el-table-column prop="avatar" label="头像" width="80">
           <template #default="{ row }">
             <el-avatar v-if="row.avatar" :src="row.avatar" :size="40" />
             <el-avatar v-else :size="40">{{ row.username?.charAt(0) }}</el-avatar>
           </template>
         </el-table-column>
-        <el-table-column prop="gender" label="性别" width="60">
+        <el-table-column prop="gender" label="性别" width="72" align="center">
           <template #default="{ row }">{{ row.gender === 'male' ? '男' : row.gender === 'female' ? '女' : '-' }}</template>
         </el-table-column>
-        <el-table-column prop="role_names" label="角色">
+        <el-table-column prop="role_names" label="角色" min-width="180">
           <template #default="{ row }">
-            <el-tag v-for="role in row.role_names" :key="role" size="small" style="margin-right: 5px">{{ role }}</el-tag>
+            <div class="tag-wrap">
+              <el-tag v-for="role in row.role_names" :key="role" size="small">{{ role }}</el-tag>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 'active' ? 'success' : 'danger'">{{ row.status === 'active' ? '启用' : '禁用' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间" width="160" />
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column prop="created_at" label="创建时间" min-width="170" />
+        <el-table-column label="操作" width="200" fixed="right" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="warning" link @click="handleResetPwd(row)">重置密码</el-button>
@@ -72,8 +77,8 @@
       />
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="720px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="96px" class="two-col-form">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" />
         </el-form-item>
@@ -209,6 +214,10 @@ onMounted(() => { fetchData(); fetchRoles() })
 
 <style scoped>
 .user-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.search-form { margin-bottom: 20px; }
+.tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.two-col-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+.two-col-form :deep(.el-form-item) { margin-bottom: 18px; }
+@media (max-width: 900px) {
+  .two-col-form { grid-template-columns: 1fr; }
+}
 </style>
