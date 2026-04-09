@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro'
 
-const baseURL = 'http://localhost:8000/api'
+const baseURL = 'http://127.0.0.1:8000/api'
 
 class Request {
   async request(url: string, options: any = {}) {

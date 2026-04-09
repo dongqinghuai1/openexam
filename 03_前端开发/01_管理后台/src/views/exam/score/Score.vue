@@ -1,9 +1,12 @@
 <template>
-  <div class="score-page">
-    <el-card>
+  <div class="score-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>成绩管理</span>
+          <div>
+            <div class="page-title">成绩管理</div>
+            <div class="page-subtitle">查看考试分数、总分与排名，快速确认结果分布。</div>
+          </div>
         </div>
       </template>
 
@@ -19,12 +22,12 @@
       </el-form>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="student_id" label="学生ID" width="100" />
-        <el-table-column prop="student_name" label="学生姓名" width="120" />
+        <el-table-column prop="student_id" label="学生ID" width="100" align="center" />
+        <el-table-column prop="student_name" label="学生姓名" min-width="120" />
         <el-table-column prop="exam_name" label="考试" min-width="180" />
-        <el-table-column prop="score" label="得分" width="100" />
-        <el-table-column prop="total_score" label="总分" width="100" />
-        <el-table-column prop="rank" label="排名" width="100" />
+        <el-table-column prop="score" label="得分" width="100" align="center" />
+        <el-table-column prop="total_score" label="总分" width="100" align="center" />
+        <el-table-column prop="rank" label="排名" width="100" align="center" />
         <el-table-column prop="created_at" label="生成时间" min-width="180" />
       </el-table>
     </el-card>
@@ -70,6 +73,4 @@ onMounted(async () => {
 
 <style scoped>
 .score-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.search-form { margin-bottom: 20px; }
 </style>

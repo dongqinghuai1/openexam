@@ -8,29 +8,32 @@ export default function Index() {
   const [userInfo, setUserInfo] = useState(null)
   const [schedules, setSchedules] = useState([])
   const [hoursAccounts, setHoursAccounts] = useState([])
+  const [studentId, setStudentId] = useState(null)
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
     if (user) {
       setUserInfo(user)
-      fetchTodaySchedules()
-      fetchHoursAccounts()
+      fetchStudentData(user)
     } else {
       Taro.redirectTo({ url: '/pages/login/index' })
     }
   }, [])
 
-  const fetchTodaySchedules = async () => {
+  const fetchStudentData = async (user) => {
     try {
-      const res = await api.get('/edu/students/1/schedules/')
-      setSchedules(res.data || [])
-    } catch (e) { console.error(e) }
-  }
-
-  const fetchHoursAccounts = async () => {
-    try {
-      const res = await api.get('/edu/hours/accounts/', { student_id: 1 })
-      setHoursAccounts(res.data || [])
+      const studentRes = await api.get('/edu/students/', { phone: user.phone || user.username })
+      const students = studentRes.results || studentRes.data?.results || studentRes.data || []
+      const student = Array.isArray(students) ? students[0] : null
+      if (!student) {
+        Taro.showToast({ title: '未找到学生档案', icon: 'none' })
+        return
+      }
+      setStudentId(student.id)
+      const scheduleRes = await api.get(`/edu/students/${student.id}/schedules/`)
+      setSchedules(scheduleRes || scheduleRes.data || [])
+      const hoursRes = await api.get('/edu/hours/accounts/', { student: student.id })
+      setHoursAccounts(hoursRes.results || hoursRes.data?.results || hoursRes.data || [])
     } catch (e) { console.error(e) }
   }
 
@@ -44,7 +47,7 @@ export default function Index() {
     Taro.showToast({ title: `课堂功能开发中: ${schedule.id}`, icon: 'none' })
   }
 
-  const totalHours = hoursAccounts.reduce((sum, acc) => sum + (acc.total_hours - acc.used_hours), 0)
+  const totalHours = hoursAccounts.reduce((sum, acc) => sum + (acc.remaining_hours || 0), 0)
 
   return (
     <View className="index">

@@ -4,8 +4,8 @@
       <div class="logo">
         <div class="logo-mark">EA</div>
         <div class="logo-copy">
-          <strong>EduAdmin</strong>
-          <span>Apple-like Console</span>
+          <strong>OPENEXAM</strong>
+          <span>Operations Console</span>
         </div>
       </div>
       <el-menu
@@ -45,7 +45,7 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
-          <div class="status-pill">LOCAL DEMO</div>
+          <div class="status-pill">OPENEXAM / PRODUCTION UI</div>
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-icon><User /></el-icon>

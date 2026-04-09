@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py init_subjects && python manage.py init_admin --username ${ADMIN_USERNAME:-admin} --password ${ADMIN_PASSWORD:-admin123} --email ${ADMIN_EMAIL:-admin@example.com} && gunicorn eduadmin.wsgi:application --bind 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py init_subjects && python manage.py init_admin --username ${ADMIN_USERNAME:-admin} --password ${ADMIN_PASSWORD:-admin123} --email ${ADMIN_EMAIL:-admin@example.com} && python manage.py init_demo_users && gunicorn eduadmin.wsgi:application --bind 0.0.0.0:8000"]

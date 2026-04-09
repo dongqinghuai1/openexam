@@ -1,21 +1,24 @@
 <template>
-  <div class="notification-page">
-    <el-card>
+  <div class="notification-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>通知消息</span>
+          <div>
+            <div class="page-title">通知消息</div>
+            <div class="page-subtitle">统一维护对教师、学生、家长和管理端的系统通知。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增通知</el-button>
         </div>
       </template>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="title" label="标题" min-width="180" />
-        <el-table-column prop="level" label="级别" width="100" />
-        <el-table-column prop="target_type" label="发送对象" width="100" />
-        <el-table-column prop="status" label="状态" width="100" />
-        <el-table-column prop="creator_name" label="创建人" width="100" />
-        <el-table-column prop="published_at" label="发布时间" width="180" />
-        <el-table-column label="操作" width="180">
+        <el-table-column prop="title" label="标题" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="level" label="级别" width="100" align="center" />
+        <el-table-column prop="target_type" label="发送对象" width="110" align="center" />
+        <el-table-column prop="status" label="状态" width="100" align="center" />
+        <el-table-column prop="creator_name" label="创建人" min-width="120" />
+        <el-table-column prop="published_at" label="发布时间" min-width="180" />
+        <el-table-column label="操作" width="200" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button v-if="row.status === 'draft'" type="success" link @click="handlePublish(row)">发布</el-button>
@@ -25,8 +28,8 @@
       </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="640px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="760px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="92px" class="notification-form-grid">
         <el-form-item label="标题" prop="title"><el-input v-model="form.title" /></el-form-item>
         <el-form-item label="级别" prop="level">
           <el-select v-model="form.level">
@@ -44,7 +47,7 @@
             <el-option label="管理员" value="admin" />
           </el-select>
         </el-form-item>
-        <el-form-item label="内容" prop="content"><el-input v-model="form.content" type="textarea" :rows="5" /></el-form-item>
+        <el-form-item label="内容" prop="content" class="full-span"><el-input v-model="form.content" type="textarea" :rows="5" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -143,5 +146,11 @@ onMounted(fetchData)
 
 <style scoped>
 .notification-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
+.notification-form-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+.notification-form-grid :deep(.el-form-item) { margin-bottom: 18px; }
+.full-span { grid-column: 1 / -1; }
+@media (max-width: 900px) {
+  .notification-form-grid { grid-template-columns: 1fr; }
+  .full-span { grid-column: auto; }
+}
 </style>

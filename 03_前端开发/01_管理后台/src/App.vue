@@ -11,18 +11,19 @@ import locale from 'element-plus/es/locale/lang/zh-cn'
 <style>
 :root {
   --bg: #f5f5f7;
-  --panel: rgba(255, 255, 255, 0.82);
+  --panel: rgba(255, 255, 255, 0.86);
   --panel-strong: #ffffff;
   --panel-soft: #fbfbfd;
-  --line: rgba(15, 23, 42, 0.08);
-  --line-strong: rgba(15, 23, 42, 0.12);
+  --line: rgba(15, 23, 42, 0.06);
+  --line-strong: rgba(15, 23, 42, 0.1);
   --text: #111827;
   --muted: #6b7280;
   --accent: #0071e3;
   --accent-soft: rgba(0, 113, 227, 0.08);
   --success: #34a853;
   --danger: #d92d20;
-  --shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+  --shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+  --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 * {
@@ -35,9 +36,9 @@ html, body, #app {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(0, 113, 227, 0.06), transparent 22%),
-    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.85), transparent 30%),
-    linear-gradient(180deg, #f7f8fa 0%, #f3f4f6 100%);
+    radial-gradient(circle at top left, rgba(64, 142, 255, 0.08), transparent 24%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.92), transparent 30%),
+    linear-gradient(180deg, #f7f8fa 0%, #f2f4f7 100%);
   color: var(--text);
 }
 
@@ -58,6 +59,16 @@ a {
   backdrop-filter: blur(18px);
 }
 
+.el-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.52), rgba(255,255,255,0));
+  opacity: 0.65;
+}
+
 .page-shell {
   display: flex;
   flex-direction: column;
@@ -67,20 +78,22 @@ a {
 .surface-card {
   padding: 2px;
   border-radius: 26px;
+  position: relative;
 }
 
 .page-title {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  color: #111827;
+  letter-spacing: -0.04em;
+  color: #0f172a;
 }
 
 .page-subtitle {
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 14px;
   line-height: 1.7;
   color: #667085;
+  max-width: 720px;
 }
 
 .card-header {
@@ -94,8 +107,8 @@ a {
 .card-header > strong {
   font-size: 18px;
   font-weight: 650;
-  color: #111827;
-  letter-spacing: -0.02em;
+  color: #0f172a;
+  letter-spacing: -0.025em;
 }
 
 .toolbar-row {
@@ -160,20 +173,20 @@ a {
 
 .el-card__header {
   border-bottom: 1px solid var(--line) !important;
-  padding: 20px 24px !important;
+  padding: 22px 26px !important;
 }
 
 .el-card__body {
-  padding: 22px 24px !important;
+  padding: 24px 26px !important;
 }
 
 .el-table {
   --el-table-border-color: var(--line) !important;
-  --el-table-header-bg-color: rgba(245, 247, 250, 0.8) !important;
+  --el-table-header-bg-color: rgba(247, 248, 250, 0.88) !important;
   --el-table-tr-bg-color: transparent !important;
   --el-table-row-hover-bg-color: rgba(0, 113, 227, 0.04) !important;
   --el-table-text-color: var(--text) !important;
-  --el-table-header-text-color: #374151 !important;
+  --el-table-header-text-color: #475467 !important;
   background: transparent !important;
   color: var(--text) !important;
 }
@@ -185,8 +198,8 @@ a {
 }
 
 .el-table__cell {
-  padding-top: 14px !important;
-  padding-bottom: 14px !important;
+  padding-top: 15px !important;
+  padding-bottom: 15px !important;
 }
 
 .el-table .cell {
@@ -218,6 +231,9 @@ a {
 
 .el-table th.el-table__cell {
   font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .el-table td.el-table__cell {
@@ -230,9 +246,10 @@ a {
 .el-date-editor.el-input__wrapper,
 .el-input-number,
 .el-input-number .el-input__wrapper {
-  background: rgba(255, 255, 255, 0.92) !important;
-  box-shadow: 0 0 0 1px var(--line) inset !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.06) inset, 0 1px 1px rgba(15, 23, 42, 0.02) !important;
   color: var(--text) !important;
+  border-radius: 14px !important;
 }
 
 .el-input__inner,
@@ -265,6 +282,18 @@ a {
   box-shadow: var(--shadow) !important;
 }
 
+.el-dialog__header {
+  padding: 24px 28px 12px !important;
+}
+
+.el-dialog__body {
+  padding: 18px 28px 8px !important;
+}
+
+.el-dialog__footer {
+  padding: 16px 28px 24px !important;
+}
+
 .el-dialog__title,
 .el-drawer__title {
   color: var(--text) !important;
@@ -285,6 +314,7 @@ a {
   --el-button-active-border-color: #0062c4 !important;
   --el-button-text-color: #ffffff !important;
   border-radius: 999px !important;
+  box-shadow: 0 8px 20px rgba(0, 113, 227, 0.16);
 }
 
 .el-button:not(.el-button--primary) {
@@ -292,6 +322,12 @@ a {
   border-color: var(--line);
   color: var(--text);
   border-radius: 999px;
+}
+
+.el-button {
+  min-height: 36px;
+  padding-inline: 16px;
+  font-weight: 600;
 }
 
 .el-pagination {

@@ -7,21 +7,30 @@ import './index.scss'
 export default function Index() {
   const [userInfo, setUserInfo] = useState(null)
   const [schedules, setSchedules] = useState([])
+  const [teacherId, setTeacherId] = useState(null)
 
   useEffect(() => {
     const user = Taro.getStorageSync('userInfo')
     if (user) {
       setUserInfo(user)
-      fetchTodaySchedules()
+      fetchTeacherAndSchedules(user)
     } else {
       Taro.redirectTo({ url: '/pages/login/index' })
     }
   }, [])
 
-  const fetchTodaySchedules = async () => {
+  const fetchTeacherAndSchedules = async (user) => {
     try {
-      const res = await api.get('/edu/teachers/1/schedules/')
-      setSchedules(res.data || [])
+      const teacherRes = await api.get('/edu/teachers/', { phone: user.phone || user.username })
+      const teachers = teacherRes.results || teacherRes.data?.results || teacherRes.data || []
+      const teacher = Array.isArray(teachers) ? teachers[0] : null
+      if (!teacher) {
+        Taro.showToast({ title: '未找到教师档案', icon: 'none' })
+        return
+      }
+      setTeacherId(teacher.id)
+      const scheduleRes = await api.get(`/edu/teachers/${teacher.id}/schedules/`)
+      setSchedules(scheduleRes || scheduleRes.data || [])
     } catch (e) {
       console.error(e)
     }

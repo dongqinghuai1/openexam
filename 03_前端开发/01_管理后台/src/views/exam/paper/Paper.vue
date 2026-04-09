@@ -1,21 +1,24 @@
 <template>
-  <div class="paper-page">
-    <el-card>
+  <div class="paper-page page-shell">
+    <el-card class="surface-card">
       <template #header>
         <div class="card-header">
-          <span>试卷管理</span>
+          <div>
+            <div class="page-title">试卷管理</div>
+            <div class="page-subtitle">组织题目结构、考试时长和试卷总分，保证出题配置清晰稳定。</div>
+          </div>
           <el-button type="primary" @click="handleAdd">新增试卷</el-button>
         </div>
       </template>
 
       <el-table :data="tableData" v-loading="loading" stripe>
         <el-table-column prop="name" label="试卷名称" min-width="180" />
-        <el-table-column prop="subject_name" label="科目" width="120" />
-        <el-table-column prop="question_count" label="题目数" width="100" />
-        <el-table-column prop="total_score" label="总分" width="80" />
-        <el-table-column prop="duration" label="时长(分钟)" width="100" />
-        <el-table-column prop="status" label="状态" width="100" />
-        <el-table-column label="操作" width="140">
+        <el-table-column prop="subject_name" label="科目" width="120" align="center" />
+        <el-table-column prop="question_count" label="题目数" width="100" align="center" />
+        <el-table-column prop="total_score" label="总分" width="90" align="center" />
+        <el-table-column prop="duration" label="时长(分钟)" width="120" align="center" />
+        <el-table-column prop="status" label="状态" width="100" align="center" />
+        <el-table-column label="操作" width="160" class-name="operation-column">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
@@ -24,8 +27,8 @@
       </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="760px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="820px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="92px" class="paper-form-grid">
         <el-form-item label="试卷名称" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
@@ -37,7 +40,7 @@
         <el-form-item label="时长" prop="duration">
           <el-input-number v-model="form.duration" :min="10" :max="300" />
         </el-form-item>
-        <el-form-item label="题目" prop="question_ids">
+        <el-form-item label="题目" prop="question_ids" class="full-span">
           <el-select v-model="form.question_ids" multiple filterable style="width: 100%">
             <el-option v-for="item in filteredQuestions" :key="item.id" :label="`${item.id} - ${item.content}`" :value="item.id" />
           </el-select>
@@ -160,5 +163,11 @@ onMounted(async () => {
 
 <style scoped>
 .paper-page { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
+.paper-form-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+.paper-form-grid :deep(.el-form-item) { margin-bottom: 18px; }
+.full-span { grid-column: 1 / -1; }
+@media (max-width: 900px) {
+  .paper-form-grid { grid-template-columns: 1fr; }
+  .full-span { grid-column: auto; }
+}
 </style>

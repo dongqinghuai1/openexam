@@ -14,13 +14,16 @@
       <el-table :data="tableData" v-loading="loading" row-key="id" stripe>
         <el-table-column prop="name" label="菜单名称" min-width="240">
           <template #default="{ row }">
-            <span :style="{ paddingLeft: (row._level || 0) * 20 + 'px' }">{{ row.name }}</span>
+            <div class="menu-tree-cell" :style="{ paddingLeft: (row._level || 0) * 18 + 'px' }">
+              <span class="menu-level-dot" :class="`level-${row._level || 0}`"></span>
+              <span class="menu-name">{{ row.name }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="path" label="路由" min-width="180" show-overflow-tooltip />
         <el-table-column prop="component" label="组件" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="sort" label="排序" width="80" />
-        <el-table-column prop="visible" label="可见" width="80">
+        <el-table-column prop="sort" label="排序" width="90" align="center" />
+        <el-table-column prop="visible" label="可见" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="row.visible ? 'success' : 'info'">{{ row.visible ? '是' : '否' }}</el-tag>
           </template>
@@ -36,8 +39,8 @@
       </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="760px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="96px" class="menu-form-grid">
         <el-form-item label="菜单名称" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
@@ -61,7 +64,7 @@
         <el-form-item label="是否可见">
           <el-switch v-model="form.visible" />
         </el-form-item>
-        <el-form-item label="权限标识">
+        <el-form-item label="权限标识" class="full-span">
           <el-input v-model="form.permission" />
         </el-form-item>
       </el-form>
@@ -212,4 +215,50 @@ onMounted(() => { fetchData() })
 
 <style scoped>
 .menu-page { padding: 20px; }
+.menu-tree-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.menu-level-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #d0d5dd;
+  flex-shrink: 0;
+}
+
+.menu-level-dot.level-0 { background: #2563eb; }
+.menu-level-dot.level-1 { background: #7c3aed; }
+.menu-level-dot.level-2 { background: #0ea5e9; }
+
+.menu-name {
+  font-weight: 550;
+  color: #111827;
+}
+
+.menu-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 18px;
+}
+
+.menu-form-grid :deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+.full-span {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .menu-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-span {
+    grid-column: auto;
+  }
+}
 </style>

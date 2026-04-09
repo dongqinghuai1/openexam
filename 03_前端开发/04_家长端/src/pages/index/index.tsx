@@ -13,24 +13,26 @@ export default function Index() {
     const user = Taro.getStorageSync('userInfo')
     if (user) {
       setUserInfo(user)
-      fetchChildren()
-      fetchTodaySchedules()
+      fetchChildren(user)
     } else {
       Taro.redirectTo({ url: '/pages/login/index' })
     }
   }, [])
 
-  const fetchChildren = async () => {
+  const fetchChildren = async (user) => {
     try {
       const res = await api.get('/edu/students/', { parent_phone: userInfo?.phone })
-      setChildren(res.data?.results || [])
+      const list = res.results || res.data?.results || res.data || []
+      setChildren(list)
+      fetchTodaySchedules(list)
     } catch (e) { console.error(e) }
   }
 
-  const fetchTodaySchedules = async () => {
+  const fetchTodaySchedules = async (studentList) => {
     try {
       const res = await api.get('/edu/schedules/', { date: new Date().toISOString().split('T')[0] })
-      setSchedules(res.data?.results || [])
+      const list = res.results || res.data?.results || res.data || []
+      setSchedules(list.filter(item => studentList.some(student => student.id === item.student_id || student.id === item.student)))
     } catch (e) { console.error(e) }
   }
 

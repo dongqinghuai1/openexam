@@ -1,8 +1,11 @@
 <template>
-  <div class="log-page">
-    <el-card>
+  <div class="log-page page-shell">
+    <el-card class="surface-card">
       <template #header>
-        <span>操作日志</span>
+        <div>
+          <div class="page-title">操作日志</div>
+          <div class="page-subtitle">记录系统关键写操作，帮助排查数据变更与异常行为。</div>
+        </div>
       </template>
 
       <el-form :inline="true" :model="queryForm" class="search-form">
@@ -22,12 +25,12 @@
       </el-form>
 
       <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="username" label="操作人" width="120" />
-        <el-table-column prop="method" label="方法" width="100" />
-        <el-table-column prop="path" label="路径" min-width="220" />
-        <el-table-column prop="duration" label="耗时(ms)" width="100" />
-        <el-table-column prop="ip" label="IP" width="140" />
-        <el-table-column prop="created_at" label="时间" width="180" />
+        <el-table-column prop="username" label="操作人" min-width="120" />
+        <el-table-column prop="method" label="方法" width="90" align="center" />
+        <el-table-column prop="path" label="路径" min-width="260" show-overflow-tooltip />
+        <el-table-column prop="duration" label="耗时(ms)" width="110" align="center" />
+        <el-table-column prop="ip" label="IP" min-width="140" />
+        <el-table-column prop="created_at" label="时间" min-width="180" />
       </el-table>
     </el-card>
   </div>
