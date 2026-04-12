@@ -10,7 +10,7 @@ import locale from 'element-plus/es/locale/lang/zh-cn'
 
 <style>
 /* 引入统一设计规范 */
-@import '../../design-system.css';
+@import './design-system.css';
 
 html, body, #app {
   height: 100%;

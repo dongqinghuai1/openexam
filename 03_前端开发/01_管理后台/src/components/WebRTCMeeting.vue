@@ -1,7 +1,8 @@
 <template>
   <div class="webrtc-meeting">
     <el-dialog
-      v-model="visible"
+      :model-value="visible"
+      @update:model-value="$emit('update:visible', $event)"
       :title="`在线课堂 - ${meetingInfo?.schedule?.edu_class?.name || ''} - ${meetingInfo?.schedule?.course?.name || ''}`"
       width="90%"
       height="90vh"

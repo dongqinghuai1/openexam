@@ -1,0 +1,164 @@
+/* OpenExam 教育相关图标库 */
+
+/* 图标容器 */
+.openexam-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--openexam-radius-full);
+  font-size: 20px;
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-icon:hover {
+  transform: scale(1.1);
+}
+
+/* 学习相关图标 */
+.openexam-icon-book {
+  background-color: var(--openexam-primary-light);
+  color: var(--openexam-primary);
+}
+
+.openexam-icon-pencil {
+  background-color: var(--openexam-secondary-light);
+  color: var(--openexam-secondary);
+}
+
+.openexam-icon-graduation {
+  background-color: var(--openexam-success-light);
+  color: var(--openexam-success);
+}
+
+.openexam-icon-bookmark {
+  background-color: var(--openexam-warning-light);
+  color: var(--openexam-warning);
+}
+
+/* 考试相关图标 */
+.openexam-icon-exam {
+  background-color: var(--openexam-secondary-light);
+  color: var(--openexam-secondary);
+}
+
+.openexam-icon-check {
+  background-color: var(--openexam-success-light);
+  color: var(--openexam-success);
+}
+
+.openexam-icon-times {
+  background-color: var(--openexam-danger-light);
+  color: var(--openexam-danger);
+}
+
+.openexam-icon-clock {
+  background-color: var(--openexam-info-light);
+  color: var(--openexam-info);
+}
+
+/* 教育相关图标 */
+.openexam-icon-teacher {
+  background-color: var(--openexam-primary-light);
+  color: var(--openexam-primary);
+}
+
+.openexam-icon-student {
+  background-color: var(--openexam-secondary-light);
+  color: var(--openexam-secondary);
+}
+
+.openexam-icon-classroom {
+  background-color: var(--openexam-success-light);
+  color: var(--openexam-success);
+}
+
+.openexam-icon-online {
+  background-color: var(--openexam-info-light);
+  color: var(--openexam-info);
+}
+
+/* 动画效果 */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.openexam-icon.bounce {
+  animation: bounce 1s infinite;
+}
+
+.openexam-icon.pulse {
+  animation: pulse 2s infinite;
+}
+
+.openexam-icon.spin {
+  animation: spin 2s linear infinite;
+}
+
+/* 响应式图标 */
+@media (max-width: 768px) {
+  .openexam-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
+
+/* 图标组 */
+.openexam-icon-group {
+  display: flex;
+  align-items: center;
+  gap: var(--openexam-space-3);
+  flex-wrap: wrap;
+}
+
+/* 图标按钮 */
+.openexam-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--openexam-radius-full);
+  background-color: var(--openexam-bg-primary);
+  border: 1px solid var(--openexam-border);
+  color: var(--openexam-text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-icon-button:hover {
+  background-color: var(--openexam-bg-secondary);
+  border-color: var(--openexam-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--openexam-shadow);
+}
+
+.openexam-icon-button:active {
+  transform: translateY(0);
+}

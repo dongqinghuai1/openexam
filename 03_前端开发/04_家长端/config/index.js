@@ -21,6 +21,17 @@ module.exports = {
       host: '0.0.0.0'
     },
     publicPath: '/',
-    staticDirectory: 'static'
+    staticDirectory: 'static',
+    postcss: {
+      autoprefixer: {
+        enable: true,
+        config: {
+          targets: ['last 2 versions', 'not ie <= 8']
+        }
+      },
+      pxtransform: {
+        enable: false
+      }
+    }
   }
 }

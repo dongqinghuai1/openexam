@@ -44,6 +44,9 @@ module.exports = {
         config: {
           targets: ['last 2 versions', 'not ie <= 8']
         }
+      },
+      pxtransform: {
+        enable: false
       }
     }
   }

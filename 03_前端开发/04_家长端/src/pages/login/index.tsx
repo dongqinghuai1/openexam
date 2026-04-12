@@ -36,13 +36,20 @@ export default function Login() {
 
   return (
     <View className="login">
-      <View className="logo">EduAdmin</View>
-      <Text className="title">家长端登录</Text>
+      <View className="login-orb login-orb-left"></View>
+      <View className="login-orb login-orb-right"></View>
+
       <View className="form">
+        <View className="logo">OX</View>
+        <Text className="title">OPENEXAM</Text>
+        <Text className="subtitle">家长端登录</Text>
+
         <Input className="input" placeholder="请输入用户名 / 手机号 / 邮箱" value={account} onInput={(e) => setAccount(e.detail.value)} />
         <Input className="input" type="password" placeholder="请输入密码" value={password} onInput={(e) => setPassword(e.detail.value)} />
         <Button className="btn" loading={loading} onClick={handleLogin}>登录</Button>
       </View>
+
+      <View className="login-footer">© 2025 OPENEXAM</View>
     </View>
   )
 }

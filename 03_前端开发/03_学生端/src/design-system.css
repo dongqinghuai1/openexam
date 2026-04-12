@@ -1,0 +1,913 @@
+/* OpenExam 现代设计系统规范 */
+
+/* 引入图标库 */
+@import './icons.css';
+
+/* 颜色系统 - 现代渐变色系 */
+:root {
+  /* 主色调 - 现代蓝紫色渐变 */
+  --openexam-primary: #6366f1; /* 靛蓝色 - 代表创新、智慧 */
+  --openexam-primary-light: #818cf8;
+  --openexam-primary-dark: #4f46e5;
+  
+  /* 辅助色 - 活力橙 */
+  --openexam-secondary: #f97316; /* 橙色 - 代表活力、热情 */
+  --openexam-secondary-light: #fb923c;
+  --openexam-secondary-dark: #ea580c;
+  
+  /* 功能色 */
+  --openexam-success: #10b981; /* 绿色 - 成功 */
+  --openexam-warning: #f59e0b; /* 黄色 - 警告 */
+  --openexam-danger: #ef4444; /* 红色 - 危险 */
+  --openexam-info: #3b82f6; /* 蓝色 - 信息 */
+  
+  /* 中性色 */
+  --openexam-text-primary: #1e293b; /* 主文本 */
+  --openexam-text-secondary: #64748b; /* 次要文本 */
+  --openexam-text-tertiary: #94a3b8; /*  tertiary文本 */
+  
+  /* 背景色 */
+  --openexam-bg-primary: #ffffff;
+  --openexam-bg-secondary: #f8fafc;
+  --openexam-bg-tertiary: #f1f5f9;
+  --openexam-bg-quaternary: #e2e8f0;
+  --openexam-bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  
+  /* 边框色 */
+  --openexam-border: #e2e8f0;
+  --openexam-border-light: #f1f5f9;
+  --openexam-border-dark: #cbd5e1;
+  
+  /* 阴影 - 现代柔和阴影 */
+  --openexam-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --openexam-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --openexam-shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --openexam-shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+  --openexam-shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  
+  /* 字体 - 现代无衬线字体 */
+  --openexam-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  /* 字体大小 */
+  --openexam-font-xs: 0.75rem; /* 12px */
+  --openexam-font-sm: 0.875rem; /* 14px */
+  --openexam-font-base: 1rem; /* 16px */
+  --openexam-font-lg: 1.125rem; /* 18px */
+  --openexam-font-xl: 1.25rem; /* 20px */
+  --openexam-font-2xl: 1.5rem; /* 24px */
+  --openexam-font-3xl: 1.875rem; /* 30px */
+  --openexam-font-4xl: 2.25rem; /* 36px */
+  --openexam-font-5xl: 3rem; /* 48px */
+  
+  /* 字体重量 */
+  --openexam-font-light: 300;
+  --openexam-font-normal: 400;
+  --openexam-font-medium: 500;
+  --openexam-font-semibold: 600;
+  --openexam-font-bold: 700;
+  --openexam-font-extrabold: 800;
+  
+  /* 间距 */
+  --openexam-space-1: 0.25rem; /* 4px */
+  --openexam-space-2: 0.5rem; /* 8px */
+  --openexam-space-3: 0.75rem; /* 12px */
+  --openexam-space-4: 1rem; /* 16px */
+  --openexam-space-5: 1.25rem; /* 20px */
+  --openexam-space-6: 1.5rem; /* 24px */
+  --openexam-space-8: 2rem; /* 32px */
+  --openexam-space-10: 2.5rem; /* 40px */
+  --openexam-space-12: 3rem; /* 48px */
+  --openexam-space-16: 4rem; /* 64px */
+  --openexam-space-20: 5rem; /* 80px */
+  
+  /* 边框半径 - 现代圆角 */
+  --openexam-radius-sm: 0.375rem; /* 6px */
+  --openexam-radius: 0.5rem; /* 8px */
+  --openexam-radius-md: 0.75rem; /* 12px */
+  --openexam-radius-lg: 1rem; /* 16px */
+  --openexam-radius-xl: 1.5rem; /* 24px */
+  --openexam-radius-2xl: 2rem; /* 32px */
+  --openexam-radius-3xl: 2.5rem; /* 40px */
+  --openexam-radius-full: 9999px;
+  
+  /* 过渡 - 平滑动画 */
+  --openexam-transition-fast: 150ms ease-in-out;
+  --openexam-transition-normal: 200ms ease-in-out;
+  --openexam-transition-slow: 300ms ease-in-out;
+  --openexam-transition-bounce: 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--openexam-font-family);
+  font-size: var(--openexam-font-base);
+  line-height: 1.5;
+  color: var(--openexam-text-primary);
+  background: var(--openexam-bg-gradient);
+  min-height: 100vh;
+}
+
+/* 通用工具类 */
+.openexam-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--openexam-space-4);
+}
+
+/* 现代卡片设计 */
+.openexam-card {
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-xl);
+  box-shadow: var(--openexam-shadow);
+  border: 1px solid var(--openexam-border);
+  padding: var(--openexam-space-6);
+  transition: all var(--openexam-transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.openexam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--openexam-primary), var(--openexam-secondary));
+  transform: scaleX(0);
+  transition: transform var(--openexam-transition-normal);
+}
+
+.openexam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--openexam-shadow-lg);
+}
+
+.openexam-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* 现代按钮设计 */
+.openexam-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--openexam-space-3) var(--openexam-space-6);
+  border-radius: var(--openexam-radius-full);
+  font-weight: var(--openexam-font-semibold);
+  transition: all var(--openexam-transition-fast);
+  cursor: pointer;
+  border: none;
+  font-size: var(--openexam-font-sm);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.openexam-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  z-index: -1;
+}
+
+.openexam-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.openexam-btn-primary {
+  background: linear-gradient(90deg, var(--openexam-primary), var(--openexam-secondary));
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4);
+}
+
+.openexam-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px 0 rgba(99, 102, 241, 0.5);
+}
+
+.openexam-btn-secondary {
+  background: var(--openexam-bg-primary);
+  color: var(--openexam-text-primary);
+  border: 1px solid var(--openexam-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.openexam-btn-secondary:hover {
+  background: var(--openexam-bg-secondary);
+  border-color: var(--openexam-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 现代输入框设计 */
+.openexam-input {
+  width: 100%;
+  padding: var(--openexam-space-3) var(--openexam-space-4);
+  border: 2px solid var(--openexam-border);
+  border-radius: var(--openexam-radius-lg);
+  font-size: var(--openexam-font-base);
+  transition: all var(--openexam-transition-fast);
+  background: var(--openexam-bg-primary);
+  font-family: var(--openexam-font-family);
+}
+
+.openexam-input:focus {
+  outline: none;
+  border-color: var(--openexam-primary);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  transform: translateY(-1px);
+}
+
+.openexam-input::placeholder {
+  color: var(--openexam-text-tertiary);
+}
+
+/* 现代标题设计 */
+.openexam-title {
+  font-size: var(--openexam-font-4xl);
+  font-weight: var(--openexam-font-extrabold);
+  color: var(--openexam-text-primary);
+  margin-bottom: var(--openexam-space-4);
+  line-height: 1.1;
+  background: linear-gradient(90deg, var(--openexam-primary), var(--openexam-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.openexam-subtitle {
+  font-size: var(--openexam-font-xl);
+  font-weight: var(--openexam-font-semibold);
+  color: var(--openexam-text-secondary);
+  margin-bottom: var(--openexam-space-3);
+  line-height: 1.3;
+}
+
+/* 现代文本样式 */
+.openexam-text {
+  font-size: var(--openexam-font-base);
+  color: var(--openexam-text-primary);
+  line-height: 1.6;
+}
+
+.openexam-text-secondary {
+  font-size: var(--openexam-font-sm);
+  color: var(--openexam-text-secondary);
+  line-height: 1.5;
+}
+
+/* 现代徽章设计 */
+.openexam-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--openexam-space-1) var(--openexam-space-3);
+  border-radius: var(--openexam-radius-full);
+  font-size: var(--openexam-font-xs);
+  font-weight: var(--openexam-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.openexam-badge-primary {
+  background: var(--openexam-primary-light);
+  color: var(--openexam-primary-dark);
+}
+
+.openexam-badge-secondary {
+  background: var(--openexam-secondary-light);
+  color: var(--openexam-secondary-dark);
+}
+
+.openexam-badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--openexam-success);
+}
+
+.openexam-badge-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--openexam-warning);
+}
+
+.openexam-badge-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--openexam-danger);
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .openexam-container {
+    max-width: 960px;
+  }
+  
+  :root {
+    --openexam-font-4xl: 2rem; /* 32px */
+    --openexam-font-5xl: 2.5rem; /* 40px */
+  }
+}
+
+@media (max-width: 992px) {
+  .openexam-container {
+    max-width: 720px;
+  }
+  
+  :root {
+    --openexam-font-3xl: 1.5rem; /* 24px */
+    --openexam-font-4xl: 1.75rem; /* 28px */
+  }
+}
+
+@media (max-width: 768px) {
+  .openexam-container {
+    max-width: 540px;
+    padding: 0 var(--openexam-space-3);
+  }
+  
+  :root {
+    --openexam-font-2xl: 1.25rem; /* 20px */
+    --openexam-font-3xl: 1.5rem; /* 24px */
+  }
+  
+  .openexam-card {
+    padding: var(--openexam-space-4);
+  }
+  
+  .openexam-btn {
+    padding: var(--openexam-space-2) var(--openexam-space-4);
+    font-size: var(--openexam-font-xs);
+  }
+  
+  .openexam-title {
+    font-size: var(--openexam-font-3xl);
+  }
+  
+  .openexam-subtitle {
+    font-size: var(--openexam-font-lg);
+  }
+}
+
+@media (max-width: 576px) {
+  .openexam-container {
+    max-width: 100%;
+    padding: 0 var(--openexam-space-2);
+  }
+  
+  :root {
+    --openexam-font-xl: 1.125rem; /* 18px */
+    --openexam-font-2xl: 1.25rem; /* 20px */
+  }
+  
+  .openexam-card {
+    padding: var(--openexam-space-3);
+  }
+  
+  .openexam-btn {
+    padding: var(--openexam-space-2) var(--openexam-space-3);
+  }
+}
+
+/* 现代动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 动画类 */
+.openexam-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.openexam-fade-in-left {
+  animation: fadeInLeft 0.6s ease-out;
+}
+
+.openexam-fade-in-right {
+  animation: fadeInRight 0.6s ease-out;
+}
+
+.openexam-pulse {
+  animation: pulse 2s infinite;
+}
+
+.openexam-bounce {
+  animation: bounce 1s infinite;
+}
+
+.openexam-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+/* 现代微交互效果 */
+.openexam-hover-lift {
+  transition: all var(--openexam-transition-normal);
+}
+
+.openexam-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--openexam-shadow-lg);
+}
+
+.openexam-hover-scale {
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-hover-scale:hover {
+  transform: scale(1.03);
+}
+
+.openexam-hover-glow {
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-hover-glow:hover {
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.3);
+}
+
+/* 现代加载动画 */
+.openexam-loading {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--openexam-border);
+  border-radius: 50%;
+  border-top-color: var(--openexam-primary);
+  animation: rotate 1s ease-in-out infinite;
+}
+
+/* 现代进度条 */
+.openexam-progress {
+  height: 8px;
+  background: var(--openexam-bg-tertiary);
+  border-radius: var(--openexam-radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.openexam-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--openexam-primary), var(--openexam-secondary));
+  border-radius: var(--openexam-radius-full);
+  position: relative;
+  overflow: hidden;
+}
+
+.openexam-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: slide 2s infinite;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* 现代卡片网格 */
+.openexam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--openexam-space-6);
+}
+
+/* 现代导航栏 */
+.openexam-nav {
+  background: var(--openexam-bg-primary);
+  box-shadow: var(--openexam-shadow);
+  padding: var(--openexam-space-4) var(--openexam-space-6);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.openexam-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.openexam-nav-brand {
+  font-size: var(--openexam-font-xl);
+  font-weight: var(--openexam-font-bold);
+  color: var(--openexam-primary);
+  text-decoration: none;
+}
+
+.openexam-nav-links {
+  display: flex;
+  gap: var(--openexam-space-6);
+  align-items: center;
+}
+
+.openexam-nav-link {
+  color: var(--openexam-text-primary);
+  text-decoration: none;
+  font-weight: var(--openexam-font-medium);
+  transition: color var(--openexam-transition-fast);
+  position: relative;
+}
+
+.openexam-nav-link:hover {
+  color: var(--openexam-primary);
+}
+
+.openexam-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--openexam-primary);
+  transform: scaleX(0);
+  transition: transform var(--openexam-transition-fast);
+}
+
+.openexam-nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* 现代页脚 */
+.openexam-footer {
+  background: var(--openexam-bg-primary);
+  padding: var(--openexam-space-12) var(--openexam-space-6);
+  border-top: 1px solid var(--openexam-border);
+  margin-top: var(--openexam-space-16);
+}
+
+.openexam-footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--openexam-space-8);
+}
+
+.openexam-footer-section h3 {
+  font-size: var(--openexam-font-lg);
+  font-weight: var(--openexam-font-semibold);
+  margin-bottom: var(--openexam-space-4);
+  color: var(--openexam-text-primary);
+}
+
+.openexam-footer-section p,
+.openexam-footer-section a {
+  color: var(--openexam-text-secondary);
+  text-decoration: none;
+  line-height: 1.6;
+}
+
+.openexam-footer-section a:hover {
+  color: var(--openexam-primary);
+}
+
+.openexam-footer-bottom {
+  margin-top: var(--openexam-space-8);
+  padding-top: var(--openexam-space-4);
+  border-top: 1px solid var(--openexam-border);
+  text-align: center;
+  color: var(--openexam-text-tertiary);
+  font-size: var(--openexam-font-sm);
+}
+
+/* 现代教育相关元素 */
+.openexam-education-card {
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-xl);
+  box-shadow: var(--openexam-shadow);
+  border: 1px solid var(--openexam-border);
+  padding: var(--openexam-space-6);
+  transition: all var(--openexam-transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.openexam-education-card::before {
+  content: ''; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--openexam-primary), var(--openexam-secondary));
+}
+
+.openexam-education-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--openexam-shadow-lg);
+}
+
+.openexam-education-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--openexam-radius-xl);
+  background: linear-gradient(135deg, var(--openexam-primary-light), var(--openexam-secondary-light));
+  color: var(--openexam-primary);
+  font-size: 24px;
+  margin-bottom: var(--openexam-space-4);
+}
+
+/* 现代考试相关元素 */
+.openexam-exam-card {
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-xl);
+  box-shadow: var(--openexam-shadow);
+  border: 1px solid var(--openexam-border);
+  padding: var(--openexam-space-6);
+  transition: all var(--openexam-transition-normal);
+  position: relative;
+}
+
+.openexam-exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--openexam-shadow-lg);
+}
+
+.openexam-exam-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--openexam-radius-xl);
+  background: linear-gradient(135deg, var(--openexam-secondary-light), var(--openexam-primary-light));
+  color: var(--openexam-secondary);
+  font-size: 24px;
+  margin-bottom: var(--openexam-space-4);
+}
+
+/* 现代数据可视化容器 */
+.openexam-chart-container {
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-xl);
+  box-shadow: var(--openexam-shadow);
+  border: 1px solid var(--openexam-border);
+  padding: var(--openexam-space-6);
+  transition: all var(--openexam-transition-normal);
+}
+
+.openexam-chart-container:hover {
+  box-shadow: var(--openexam-shadow-md);
+}
+
+/* 现代表格样式 */
+.openexam-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--openexam-shadow);
+}
+
+.openexam-table th {
+  background: var(--openexam-bg-secondary);
+  padding: var(--openexam-space-4);
+  text-align: left;
+  font-weight: var(--openexam-font-semibold);
+  color: var(--openexam-text-primary);
+  border-bottom: 2px solid var(--openexam-border);
+}
+
+.openexam-table td {
+  padding: var(--openexam-space-4);
+  border-bottom: 1px solid var(--openexam-border);
+  color: var(--openexam-text-primary);
+  transition: background var(--openexam-transition-fast);
+}
+
+.openexam-table tr:hover td {
+  background: var(--openexam-bg-secondary);
+}
+
+.openexam-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* 现代标签页 */
+.openexam-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--openexam-border);
+  margin-bottom: var(--openexam-space-6);
+}
+
+.openexam-tab {
+  padding: var(--openexam-space-3) var(--openexam-space-6);
+  cursor: pointer;
+  font-weight: var(--openexam-font-medium);
+  color: var(--openexam-text-secondary);
+  transition: all var(--openexam-transition-fast);
+  position: relative;
+  border-bottom: 2px solid transparent;
+}
+
+.openexam-tab:hover {
+  color: var(--openexam-primary);
+}
+
+.openexam-tab.active {
+  color: var(--openexam-primary);
+  border-bottom-color: var(--openexam-primary);
+}
+
+/* 现代开关 */
+.openexam-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.openexam-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.openexam-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--openexam-bg-tertiary);
+  transition: var(--openexam-transition-fast);
+  border-radius: var(--openexam-radius-full);
+}
+
+.openexam-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: var(--openexam-transition-fast);
+  border-radius: var(--openexam-radius-full);
+}
+
+.openexam-switch input:checked + .openexam-switch-slider {
+  background-color: var(--openexam-primary);
+}
+
+.openexam-switch input:checked + .openexam-switch-slider:before {
+  transform: translateX(26px);
+}
+
+/* 现代工具提示 */
+.openexam-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.openexam-tooltip .openexam-tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: var(--openexam-text-primary);
+  color: #fff;
+  text-align: center;
+  border-radius: var(--openexam-radius-md);
+  padding: var(--openexam-space-2) var(--openexam-space-3);
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity var(--openexam-transition-fast);
+  font-size: var(--openexam-font-xs);
+}
+
+.openexam-tooltip:hover .openexam-tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* 现代分割线 */
+.openexam-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--openexam-border), transparent);
+  margin: var(--openexam-space-8) 0;
+}
+
+/* 现代面包屑 */
+.openexam-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--openexam-space-2);
+  margin-bottom: var(--openexam-space-6);
+  font-size: var(--openexam-font-sm);
+}
+
+.openexam-breadcrumb-item {
+  color: var(--openexam-text-secondary);
+  text-decoration: none;
+  transition: color var(--openexam-transition-fast);
+}
+
+.openexam-breadcrumb-item:hover {
+  color: var(--openexam-primary);
+}
+
+.openexam-breadcrumb-item.active {
+  color: var(--openexam-primary);
+  font-weight: var(--openexam-font-medium);
+}
+
+.openexam-breadcrumb-separator {
+  color: var(--openexam-text-tertiary);
+}
