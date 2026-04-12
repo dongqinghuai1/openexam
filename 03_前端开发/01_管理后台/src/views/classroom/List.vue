@@ -36,7 +36,7 @@
         <el-table-column prop="meeting_id" label="会议ID" width="150" />
         <el-table-column prop="join_url" label="入会链接" width="120">
           <template #default="{ row }">
-            <el-link v-if="row.join_url" type="primary" :href="row.join_url" target="_blank">进入课堂</el-link>
+            <el-link v-if="row.join_url" type="primary" @click="handleJoin(row)">进入课堂</el-link>
             <span v-else>-</span>
           </template>
         </el-table-column>
@@ -56,6 +56,14 @@
         </el-table-column>
       </el-table>
     </el-card>
+    
+    <!-- WebRTC会议组件 -->
+    <WebRTCMeeting
+      v-model:visible="meetingVisible"
+      :meeting-room-id="currentMeetingId"
+      :meeting-info="currentMeetingInfo"
+      @leave="handleMeetingLeave"
+    />
   </div>
 </template>
 
@@ -64,11 +72,17 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '@/stores/user'
 import { extractErrorMessage } from '@/utils/error'
+import WebRTCMeeting from '@/components/WebRTCMeeting.vue'
 
 const loading = ref(false)
 const tableData = ref([])
 const classes = ref([])
 const queryForm = reactive({ edu_class: '', status: '' })
+
+// WebRTC会议相关
+const meetingVisible = ref(false)
+const currentMeetingId = ref(null)
+const currentMeetingInfo = ref({})
 
 function getStatusType(status) {
   const map = { pending: 'info', ongoing: 'success', ended: '' }
@@ -136,9 +150,16 @@ async function handleStart(row) {
 }
 
 function handleJoin(row) {
-  if (row.join_url) {
-    window.open(row.join_url, '_blank')
+  if (row.meeting_room_id) {
+    currentMeetingId.value = row.meeting_room_id
+    currentMeetingInfo.value = row
+    meetingVisible.value = true
   }
+}
+
+function handleMeetingLeave() {
+  // 会议结束后的处理
+  console.log('会议已结束')
 }
 
 async function handleEnd(row) {

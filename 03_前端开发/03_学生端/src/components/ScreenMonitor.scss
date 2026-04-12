@@ -1,0 +1,127 @@
+.screen-monitor-container {
+  padding: 15px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  margin-top: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status.active {
+  background: #f0f9eb;
+  color: #67c23a;
+}
+
+.status.inactive {
+  background: #fef0f0;
+  color: #f56c6c;
+}
+
+.warning-section {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #fef0f0;
+  border-radius: 6px;
+  border-left: 4px solid #f56c6c;
+}
+
+.warning-title {
+  font-size: 14px;
+  color: #333;
+}
+
+.warning-count {
+  color: #f56c6c;
+  font-weight: bold;
+}
+
+.activity-log {
+  margin-bottom: 15px;
+}
+
+.log-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.log-list {
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.log-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.log-activity {
+  font-size: 12px;
+  color: #333;
+}
+
+.log-activity.warning {
+  color: #f56c6c;
+  font-weight: bold;
+}
+
+.empty-log {
+  text-align: center;
+  color: #999;
+  padding: 20px 0;
+  font-size: 12px;
+}
+
+.monitoring-info {
+  padding: 10px;
+  background: #ecf5ff;
+  border-radius: 6px;
+  border-left: 4px solid #409eff;
+}
+
+.info-text {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.info-text:last-child {
+  margin-bottom: 0;
+}

@@ -81,17 +81,21 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    roles = RoleSerializer(many=True, read_only=True)
+    roles = serializers.SerializerMethodField()
     role_ids = serializers.ListField(write_only=True, required=False)
     role_names = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone', 'avatar', 'gender', 'birthday', 'status', 'roles', 'role_ids', 'role_names', 'created_at']
+        fields = ['id', 'username', 'email', 'phone', 'avatar', 'gender', 'birthday', 'status', 'is_superuser', 'roles', 'role_ids', 'role_names', 'created_at']
         extra_kwargs = {'password': {'write_only': True}}
 
+    def get_roles(self, obj):
+        roles = [item.role for item in obj.user_roles.select_related('role').all()]
+        return RoleSerializer(roles, many=True).data
+
     def get_role_names(self, obj):
-        return [role.name for role in obj.roles.all()]
+        return [item.role.name for item in obj.user_roles.select_related('role').all()]
 
     def create(self, validated_data):
         role_ids = validated_data.pop('role_ids', [])

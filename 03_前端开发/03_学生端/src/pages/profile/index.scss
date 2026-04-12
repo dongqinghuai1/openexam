@@ -1,56 +1,68 @@
 .profile-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  padding: 24px 20px 36px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(70, 85, 255, 0.08), transparent 26%),
+    radial-gradient(circle at 80% 30%, rgba(120, 76, 255, 0.07), transparent 24%),
+    linear-gradient(180deg, #09090b 0%, #0f172a 38%, #eef2f7 38%, #eef2f7 100%);
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 60px 30px;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  backdrop-filter: blur(20px);
+  margin-bottom: 18px;
 }
 
 .avatar {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: white;
+  background: linear-gradient(135deg, rgba(250,250,250,0.96), rgba(214,214,214,0.92));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
-  color: #667eea;
+  color: #09090b;
   font-weight: bold;
   margin-bottom: 15px;
 }
 
 .name {
   font-size: 20px;
-  color: white;
+  color: #fafafa;
   font-weight: bold;
   margin-bottom: 8px;
 }
 
 .phone {
   font-size: 14px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.7);
 }
 
 .menu-list {
-  background: white;
-  margin: 20px;
-  border-radius: 12px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 24px;
+  border: 1px solid rgba(15,23,42,0.06);
+  box-shadow: 0 18px 48px rgba(15,23,42,0.06);
 }
 
 .summary-card {
-  margin: 20px;
   padding: 20px;
-  border-radius: 12px;
-  background: white;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15,23,42,0.06);
+  box-shadow: 0 18px 48px rgba(15,23,42,0.06);
   display: flex;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 18px;
 }
 
 .summary-item {
@@ -111,10 +123,10 @@
 }
 
 .logout-btn {
-  margin: 40px 20px;
-  background: white;
-  color: #f56c6c;
+  margin-top: 24px;
+  background: #111827;
+  color: white;
   font-size: 16px;
   padding: 15px;
-  border-radius: 8px;
+  border-radius: 999px;
 }

@@ -2,6 +2,14 @@ import time
 
 from .models import OperationLog
 
+# 导入Prometheus监控
+try:
+    from eduadmin.urls import REQUEST_COUNT, REQUEST_LATENCY, REQUEST_TIME
+except ImportError:
+    REQUEST_COUNT = None
+    REQUEST_LATENCY = None
+    REQUEST_TIME = None
+
 
 class OperationLogMiddleware:
     def __init__(self, get_response):
@@ -35,5 +43,12 @@ class OperationLogMiddleware:
                 ip=request.META.get('REMOTE_ADDR'),
                 duration=int((time.time() - start) * 1000),
             )
+
+        # 记录Prometheus监控指标
+        if REQUEST_COUNT and REQUEST_LATENCY:
+            endpoint = request.path
+            duration = (time.time() - start)
+            REQUEST_COUNT.labels(method=request.method, endpoint=endpoint, status=response.status_code).inc()
+            REQUEST_LATENCY.labels(method=request.method, endpoint=endpoint).observe(duration)
 
         return response

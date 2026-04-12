@@ -8,35 +8,13 @@ export default defineAppConfig({
     'pages/link/index',
     'pages/profile/index',
     'pages/notes/index',
-    'pages/schedule-detail/index'
+    'pages/schedule-detail/index',
+    'pages/exam-grading/index'
   ],
   window: {
     navigationBarTitleText: '教师端',
     navigationBarBackgroundColor: '#ffffff',
     navigationBarTextStyle: 'black',
     backgroundColor: '#f5f7fa'
-  },
-  tabBar: {
-    color: '#666666',
-    selectedColor: '#1677ff',
-    backgroundColor: '#ffffff',
-    list: [
-      {
-        pagePath: 'pages/index/index',
-        text: '首页'
-      },
-      {
-        pagePath: 'pages/schedule/index',
-        text: '课表'
-      },
-      {
-        pagePath: 'pages/students/index',
-        text: '学生'
-      },
-      {
-        pagePath: 'pages/recordings/index',
-        text: '回放'
-      }
-    ]
   }
 })

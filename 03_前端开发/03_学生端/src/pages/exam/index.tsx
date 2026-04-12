@@ -2,6 +2,8 @@ import { View, Text, Button, Radio, RadioGroup } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import api from '../../utils/api'
+import FaceRecognition from '../../components/FaceRecognition'
+import ScreenMonitor from '../../components/ScreenMonitor'
 import './index.scss'
 
 export default function Exam() {
@@ -9,6 +11,9 @@ export default function Exam() {
   const [currentExam, setCurrentExam] = useState<any>(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [showFaceRecognition, setShowFaceRecognition] = useState(false)
+  const [faceVerified, setFaceVerified] = useState(false)
+  const [showScreenMonitor, setShowScreenMonitor] = useState(false)
 
   const isExamAvailable = (exam: any) => {
     if (exam.status === 'ended') return false
@@ -55,9 +60,27 @@ export default function Exam() {
       Taro.showToast({ title: '考试尚未开始', icon: 'none' })
       return
     }
+    // 开始考试前先进行人脸识别验证
     setCurrentExam(exam)
+    setShowFaceRecognition(true)
+  }
+
+  const handleFaceVerifySuccess = () => {
+    setFaceVerified(true)
+    setShowFaceRecognition(false)
+    setShowScreenMonitor(true)
     setCurrentQuestion(0)
     setAnswers({})
+  }
+
+  const handleFaceVerifyFail = () => {
+    Taro.showToast({ title: '人脸识别失败，请重试', icon: 'none' })
+    setShowFaceRecognition(true)
+  }
+
+  const handleFaceVerifyCancel = () => {
+    setShowFaceRecognition(false)
+    setCurrentExam(null)
   }
 
   const submitAnswer = (answer) => {
@@ -101,6 +124,8 @@ export default function Exam() {
       setCurrentExam(null)
       setCurrentQuestion(0)
       setAnswers({})
+      setShowScreenMonitor(false)
+      setFaceVerified(false)
       setTimeout(() => {
         Taro.navigateTo({ url: `/pages/exam-result/index?examId=${examId}` })
       }, 300)
@@ -109,7 +134,19 @@ export default function Exam() {
     }
   }
 
-  if (currentExam) {
+  if (showFaceRecognition) {
+    return (
+      <View className="face-recognition-page">
+        <FaceRecognition
+          onVerifySuccess={handleFaceVerifySuccess}
+          onVerifyFail={handleFaceVerifyFail}
+          onCancel={handleFaceVerifyCancel}
+        />
+      </View>
+    )
+  }
+
+  if (currentExam && faceVerified) {
     const question = currentExam.questions?.[currentQuestion]
     const answeredCount = Object.keys(answers).length
     return (
@@ -153,6 +190,12 @@ export default function Exam() {
             <Button className="submit-btn" onClick={submitExam}>提交试卷</Button>
           )}
         </View>
+        {showScreenMonitor && (
+          <ScreenMonitor 
+            examId={currentExam.id}
+            studentId={Taro.getStorageSync('studentId')}
+          />
+        )}
       </View>
     )
   }

@@ -420,6 +420,84 @@ class ExamViewSet(viewsets.ModelViewSet):
             'rank': score_record.rank,
         })
 
+    @action(detail=True, methods=['get'])
+    def essay_answers(self, request, pk=None):
+        """获取需要批改的主观题列表"""
+        exam = self.get_object()
+        
+        # 获取所有主观题答案
+        essay_answers = ExamAnswer.objects.filter(
+            exam=exam,
+            question__type='essay',
+            is_auto=False
+        ).select_related('question', 'question__subject')
+        
+        # 构建响应数据
+        data = []
+        for answer in essay_answers:
+            data.append({
+                'id': answer.id,
+                'student_id': answer.student_id,
+                'question_id': answer.question.id,
+                'question_content': answer.question.content,
+                'question_score': answer.question.score,
+                'answer': answer.answer,
+                'score': answer.score,
+                'created_at': answer.created_at
+            })
+        
+        return Response({'answers': data})
+
+    @action(detail=True, methods=['post'])
+    def grade_essay(self, request, pk=None):
+        """批改主观题"""
+        exam = self.get_object()
+        answer_id = request.data.get('answer_id')
+        score = request.data.get('score')
+        
+        if not answer_id or score is None:
+            return Response({'error': '缺少必要参数'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            answer = ExamAnswer.objects.get(id=answer_id, exam=exam)
+        except ExamAnswer.DoesNotExist:
+            return Response({'error': '答案不存在'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # 更新分数
+        answer.score = score
+        answer.is_auto = False
+        answer.save()
+        
+        # 更新总分
+        student_id = answer.student_id
+        exam_answers = ExamAnswer.objects.filter(exam=exam, student_id=student_id)
+        total_score = sum(answer.score or 0 for answer in exam_answers)
+        
+        score_record, _ = ScoreRecord.objects.update_or_create(
+            exam=exam,
+            student_id=student_id,
+            defaults={
+                'score': total_score
+            }
+        )
+        
+        # 更新排名
+        ranked_scores = list(ScoreRecord.objects.filter(exam=exam).order_by('-score', 'created_at'))
+        for rank, item in enumerate(ranked_scores, start=1):
+            if item.rank != rank:
+                item.rank = rank
+                item.save(update_fields=['rank'])
+        score_record.refresh_from_db()
+        
+        return Response({
+            'message': '批改成功',
+            'answer_id': answer_id,
+            'score': score,
+            'student_id': student_id,
+            'total_score': total_score,
+            'rank': score_record.rank
+        })
+
 
 class ScoreRecordViewSet(viewsets.ReadOnlyModelViewSet):
     """成绩记录视图"""

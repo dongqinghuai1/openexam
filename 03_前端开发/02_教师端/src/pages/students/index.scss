@@ -1,52 +1,71 @@
 .students-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #f5f7fb;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.header,
+.student-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px 30px;
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
+}
+
+.title,
+.count,
+.name,
+.detail,
+.classes,
+.phone,
+.empty {
+  display: block;
 }
 
 .title {
-  font-size: 20px;
-  color: white;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
 }
 
 .count {
-  font-size: 14px;
-  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  color: #667085;
 }
 
 .content {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .student-card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 15px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
 }
 
 .avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: #667eea;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #111827;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  font-weight: bold;
-  margin-right: 15px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-right: 14px;
 }
 
 .info {
@@ -54,34 +73,22 @@
 }
 
 .name {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.detail {
-  font-size: 14px;
-  color: #666;
-  display: block;
-  margin-bottom: 3px;
-}
-
-.classes {
-  font-size: 12px;
-  color: #667eea;
-  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
   margin-bottom: 4px;
 }
 
+.detail,
+.classes,
 .phone {
-  font-size: 12px;
-  color: #999;
+  font-size: 13px;
+  color: #667085;
+  margin-bottom: 3px;
 }
 
 .empty {
   text-align: center;
-  color: #999;
-  padding: 40px 0;
+  color: #98a2b3;
+  padding: 28px 0;
 }

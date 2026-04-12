@@ -3,13 +3,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
+from django.db.models import Q
 from django.db.models import Count, Sum
 from django.utils import timezone
 from .models import User, Role, Permission, Menu, OperationLog, Notification
 from .serializers import UserSerializer, UserCreateSerializer, RoleSerializer, MenuSerializer, PermissionSerializer, NotificationSerializer, SendSmsCodeSerializer, RegisterSerializer, ResetPasswordSerializer
 from .serializers_log import OperationLogSerializer
 from .authentication import generate_token, refresh_access_token
-from .verification import generate_verify_code, store_verify_code, verify_code, clear_verify_code, send_email_code, ensure_role, create_related_profile
+from .verification import generate_verify_code, store_verify_code, verify_code, clear_verify_code, send_email_code, ensure_role, ensure_user_role, create_related_profile
 
 
 class LoginView(APIView):
@@ -20,7 +21,12 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        user = authenticate(username=username, password=password)
+        login_user = User.objects.filter(
+            Q(username=username) | Q(phone=username) | Q(email=username)
+        ).first()
+        auth_username = login_user.username if login_user else username
+
+        user = authenticate(username=auth_username, password=password)
         if not user:
             return Response({'error': '用户名或密码错误'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -89,7 +95,7 @@ class RegisterView(APIView):
             'teacher': ('teacher', '教师'),
         }
         role = ensure_role(*role_map[data['role']])
-        user.roles.add(role)
+        ensure_user_role(user, role)
         create_related_profile(user, data['role'], data)
         clear_verify_code('register', data['email'])
 
@@ -149,7 +155,12 @@ class UserViewSet(viewsets.ModelViewSet):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        user = authenticate(username=username, password=password)
+        login_user = User.objects.filter(
+            Q(username=username) | Q(phone=username) | Q(email=username)
+        ).first()
+        auth_username = login_user.username if login_user else username
+
+        user = authenticate(username=auth_username, password=password)
         if not user:
             return Response({'error': '用户名或密码错误'}, status=status.HTTP_401_UNAUTHORIZED)
 

@@ -19,6 +19,12 @@ class MeetingRoom(models.Model):
         db_table = 'tb_meeting_room'
         verbose_name = '会议室'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['schedule'], name='idx_meeting_room_schedule'),
+            models.Index(fields=['status'], name='idx_meeting_room_status'),
+            models.Index(fields=['start_time'], name='idx_meeting_room_start_time'),
+            models.Index(fields=['end_time'], name='idx_meeting_room_end_time'),
+        ]
 
     def __str__(self):
         return f"{self.schedule} - {self.status}"
@@ -39,6 +45,12 @@ class MeetingRecord(models.Model):
         db_table = 'tb_meeting_record'
         verbose_name = '参会记录'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['meeting_room'], name='idx_meeting_record_room'),
+            models.Index(fields=['user'], name='idx_meeting_record_user'),
+            models.Index(fields=['join_time'], name='idx_meeting_record_join_time'),
+            models.Index(fields=['leave_time'], name='idx_meeting_record_leave_time'),
+        ]
 
     def __str__(self):
         return f"{self.username} - {self.meeting_room}"
@@ -60,6 +72,12 @@ class RecordingTask(models.Model):
         db_table = 'tb_recording_task'
         verbose_name = '录制任务'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['meeting_room'], name='idx_recording_task_room'),
+            models.Index(fields=['status'], name='idx_recording_task_status'),
+            models.Index(fields=['start_time'], name='idx_recording_task_start_time'),
+            models.Index(fields=['end_time'], name='idx_recording_task_end_time'),
+        ]
 
     def __str__(self):
         return f"{self.meeting_room} - {self.status}"
@@ -79,6 +97,11 @@ class PlaybackFile(models.Model):
         db_table = 'tb_playback_file'
         verbose_name = '回放文件'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['recording_task'], name='idx_playback_file_task'),
+            models.Index(fields=['status'], name='idx_playback_file_status'),
+            models.Index(fields=['view_permission'], name='idx_playback_file_permission'),
+        ]
 
     def __str__(self):
         return f"{self.recording_task} - {self.status}"
@@ -95,6 +118,11 @@ class ClassNote(models.Model):
         db_table = 'tb_class_note'
         verbose_name = '课堂备注'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['schedule'], name='idx_class_note_schedule'),
+            models.Index(fields=['created_by'], name='idx_class_note_creator'),
+            models.Index(fields=['created_at'], name='idx_class_note_created_at'),
+        ]
 
     def __str__(self):
         return f"{self.schedule} - {self.content[:20]}"

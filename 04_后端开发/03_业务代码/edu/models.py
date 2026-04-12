@@ -121,6 +121,11 @@ class Student(models.Model):
         verbose_name = '学生'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['phone'], name='idx_student_phone'),
+            models.Index(fields=['status'], name='idx_student_status'),
+            models.Index(fields=['parent_phone'], name='idx_student_parent_phone'),
+        ]
 
     def __str__(self):
         return self.name
@@ -148,6 +153,10 @@ class Teacher(models.Model):
         verbose_name = '教师'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['phone'], name='idx_teacher_phone'),
+            models.Index(fields=['status'], name='idx_teacher_status'),
+        ]
 
     def __str__(self):
         return self.name
@@ -170,6 +179,12 @@ class EduClass(models.Model):
         db_table = 'tb_class'
         verbose_name = '班级'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['code'], name='idx_class_code'),
+            models.Index(fields=['status'], name='idx_class_status'),
+            models.Index(fields=['teacher'], name='idx_class_teacher'),
+            models.Index(fields=['course'], name='idx_class_course'),
+        ]
 
     def __str__(self):
         return self.name
@@ -224,6 +239,13 @@ class Schedule(models.Model):
         verbose_name_plural = verbose_name
         ordering = ['date', 'start_time']
         unique_together = ['edu_class', 'date', 'start_time']
+        indexes = [
+            models.Index(fields=['edu_class'], name='idx_schedule_class'),
+            models.Index(fields=['teacher'], name='idx_schedule_teacher'),
+            models.Index(fields=['course'], name='idx_schedule_course'),
+            models.Index(fields=['date'], name='idx_schedule_date'),
+            models.Index(fields=['status'], name='idx_schedule_status'),
+        ]
 
 
 class RescheduleRecord(models.Model):
@@ -279,6 +301,12 @@ class StudentHoursAccount(models.Model):
         verbose_name = '学生课时账户'
         verbose_name_plural = verbose_name
         unique_together = ['student', 'course']
+        indexes = [
+            models.Index(fields=['student'], name='idx_hours_account_student'),
+            models.Index(fields=['course'], name='idx_hours_account_course'),
+            models.Index(fields=['status'], name='idx_hours_account_status'),
+            models.Index(fields=['expire_date'], name='idx_hours_account_expire_date'),
+        ]
 
     @property
     def remaining_hours(self):
@@ -302,3 +330,9 @@ class HoursFlow(models.Model):
         verbose_name = '课时流水'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['account'], name='idx_hours_flow_account'),
+            models.Index(fields=['schedule'], name='idx_hours_flow_schedule'),
+            models.Index(fields=['type'], name='idx_hours_flow_type'),
+            models.Index(fields=['created_at'], name='idx_hours_flow_created_at'),
+        ]

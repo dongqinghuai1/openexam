@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 from edu.models import Teacher, Student
-from users.models import Role, User
+from users.models import Role, User, UserRole
 
 
 VERIFY_CODE_TTL = 300
@@ -47,6 +47,10 @@ def ensure_role(code: str, name: str):
     if role:
         return role
     return Role.objects.create(code=code, name=name, status=True)
+
+
+def ensure_user_role(user: User, role: Role):
+    UserRole.objects.get_or_create(user=user, role=role)
 
 
 def create_related_profile(user: User, role_code: str, extra: dict):

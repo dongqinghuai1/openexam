@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from users.models import User
+from users.verification import ensure_role, ensure_user_role
 from edu.models import Subject, Course, Teacher, Student, EduClass, ClassStudent, Schedule
 
 
@@ -43,6 +44,10 @@ class Command(BaseCommand):
             phone='13800000003',
             email='parent@openexam.local',
         )
+
+        ensure_user_role(teacher_user, ensure_role('teacher', '教师'))
+        ensure_user_role(student_user, ensure_role('student', '学生'))
+        ensure_user_role(parent_user, ensure_role('parent', '家长'))
 
         teacher, _ = Teacher.objects.get_or_create(
             phone='13800000001',

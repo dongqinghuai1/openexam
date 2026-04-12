@@ -1,0 +1,112 @@
+.face-recognition-container {
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  display: block;
+}
+
+.camera-container {
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.guide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.face-frame {
+  width: 200px;
+  height: 250px;
+  border: 2px solid #409eff;
+  border-radius: 50% / 60%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.guide-text {
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  padding: 10px;
+}
+
+.status {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.status-text {
+  font-size: 14px;
+  padding: 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.status-text.success {
+  background: #f0f9eb;
+  color: #67c23a;
+  border: 1px solid #e1f5d7;
+}
+
+.status-text.error {
+  background: #fef0f0;
+  color: #f56c6c;
+  border: 1px solid #fbc4c4;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.capture-btn {
+  flex: 1;
+  background: #409eff;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.cancel-btn {
+  flex: 1;
+  background: #fff;
+  color: #666;
+  border: 1px solid #dcdfe6;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+}

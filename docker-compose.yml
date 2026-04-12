@@ -102,8 +102,36 @@ services:
       - eduadmin_net
     restart: unless-stopped
 
+  # Prometheus监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: eduadmin-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - eduadmin_net
+    restart: unless-stopped
+
+  # Grafana可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: eduadmin-grafana
+    ports:
+      - "3004:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - eduadmin_net
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  grafana_data:
 
 networks:
   eduadmin_net:

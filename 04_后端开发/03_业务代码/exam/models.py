@@ -28,6 +28,12 @@ class Question(models.Model):
         db_table = 'tb_question'
         verbose_name = '题目'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['subject'], name='idx_question_subject'),
+            models.Index(fields=['type'], name='idx_question_type'),
+            models.Index(fields=['difficulty'], name='idx_question_difficulty'),
+            models.Index(fields=['status'], name='idx_question_status'),
+        ]
 
 
 class Paper(models.Model):
@@ -45,6 +51,10 @@ class Paper(models.Model):
         db_table = 'tb_paper'
         verbose_name = '试卷'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['subject'], name='idx_paper_subject'),
+            models.Index(fields=['status'], name='idx_paper_status'),
+        ]
 
 
 class PaperQuestion(models.Model):
@@ -56,6 +66,11 @@ class PaperQuestion(models.Model):
     class Meta:
         db_table = 'tb_paper_question'
         unique_together = ['paper', 'question']
+        indexes = [
+            models.Index(fields=['paper'], name='idx_paper_question_paper'),
+            models.Index(fields=['question'], name='idx_paper_question_question'),
+            models.Index(fields=['sort'], name='idx_paper_question_sort'),
+        ]
 
 
 class Exam(models.Model):
@@ -73,6 +88,13 @@ class Exam(models.Model):
         db_table = 'tb_exam'
         verbose_name = '考试'
         verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['paper'], name='idx_exam_paper'),
+            models.Index(fields=['edu_class'], name='idx_exam_class'),
+            models.Index(fields=['status'], name='idx_exam_status'),
+            models.Index(fields=['start_time'], name='idx_exam_start_time'),
+            models.Index(fields=['end_time'], name='idx_exam_end_time'),
+        ]
 
 
 class ExamAnswer(models.Model):
@@ -88,6 +110,12 @@ class ExamAnswer(models.Model):
     class Meta:
         db_table = 'tb_exam_answer'
         unique_together = ['exam', 'student_id', 'question']
+        indexes = [
+            models.Index(fields=['exam'], name='idx_exam_answer_exam'),
+            models.Index(fields=['student_id'], name='idx_exam_answer_student'),
+            models.Index(fields=['question'], name='idx_exam_answer_question'),
+            models.Index(fields=['is_auto'], name='idx_exam_answer_auto'),
+        ]
 
 
 class ScoreRecord(models.Model):
@@ -102,3 +130,9 @@ class ScoreRecord(models.Model):
     class Meta:
         db_table = 'tb_score_record'
         unique_together = ['student_id', 'exam']
+        indexes = [
+            models.Index(fields=['exam'], name='idx_score_record_exam'),
+            models.Index(fields=['student_id'], name='idx_score_record_student'),
+            models.Index(fields=['score'], name='idx_score_record_score'),
+            models.Index(fields=['rank'], name='idx_score_record_rank'),
+        ]

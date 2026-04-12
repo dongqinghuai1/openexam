@@ -60,7 +60,7 @@ export default function ExamResult() {
 
       <View className='section action-list'>
         <Button className='primary-btn' onClick={() => Taro.navigateTo({ url: '/pages/scores/index' })}>查看成绩记录</Button>
-        <Button className='secondary-btn' onClick={() => Taro.switchTab({ url: '/pages/exam/index' })}>返回考试中心</Button>
+        <Button className='secondary-btn' onClick={() => Taro.navigateTo({ url: '/pages/exam/index' })}>返回考试中心</Button>
       </View>
     </View>
   )

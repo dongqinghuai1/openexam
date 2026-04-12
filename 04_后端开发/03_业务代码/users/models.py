@@ -18,6 +18,11 @@ class User(AbstractUser):
         verbose_name = '用户'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['phone'], name='idx_user_phone'),
+            models.Index(fields=['status'], name='idx_user_status'),
+            models.Index(fields=['username'], name='idx_user_username'),
+        ]
 
     def __str__(self):
         return self.username
@@ -116,6 +121,12 @@ class OperationLog(models.Model):
         verbose_name = '操作日志'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user'], name='idx_operation_log_user'),
+            models.Index(fields=['path'], name='idx_operation_log_path'),
+            models.Index(fields=['method'], name='idx_operation_log_method'),
+            models.Index(fields=['created_at'], name='idx_operation_log_created_at'),
+        ]
 
 
 class Notification(models.Model):
@@ -135,6 +146,11 @@ class Notification(models.Model):
         verbose_name = '通知消息'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status'], name='idx_notification_status'),
+            models.Index(fields=['target_type'], name='idx_notification_target_type'),
+            models.Index(fields=['published_at'], name='idx_notification_published_at'),
+        ]
 
     def __str__(self):
         return self.title

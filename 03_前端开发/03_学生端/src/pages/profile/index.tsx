@@ -97,7 +97,7 @@ export default function Profile() {
             <Text className="desc">学校: {studentInfo?.school || '-'} | 状态: {studentInfo?.status === 'active' ? '在读' : (studentInfo?.status || '-')}</Text>
           </View>
         </View>
-        <View className="menu-item" onClick={() => Taro.switchTab({ url: '/pages/exam/index' })}>
+        <View className="menu-item" onClick={() => Taro.navigateTo({ url: '/pages/exam/index' })}>
           <Text className="icon">📝</Text>
           <View className="menu-main">
             <Text className="label">考试中心</Text>

@@ -1,4 +1,127 @@
+/* 引入统一设计规范 */
+@import '../../design-system.css';
+
 page {
-  background: #f5f7fa;
-  color: #303133;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.08), transparent 26%),
+    radial-gradient(circle at 80% 30%, rgba(139, 92, 246, 0.07), transparent 24%),
+    linear-gradient(180deg, #09090b 0%, #0f172a 40%, var(--openexam-bg-tertiary) 40%, var(--openexam-bg-tertiary) 100%);
+  color: var(--openexam-text-primary);
 }
+
+.app {
+  font-family: var(--openexam-font-family);
+}
+
+/* 学生端特有样式 */
+.student-header {
+  background: linear-gradient(135deg, var(--openexam-primary) 0%, var(--openexam-secondary) 100%);
+  color: white;
+  padding: var(--openexam-space-6) var(--openexam-space-8);
+  border-radius: 0 0 var(--openexam-radius-2xl) var(--openexam-radius-2xl);
+  box-shadow: var(--openexam-shadow-md);
+}
+
+.student-card {
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-lg);
+  box-shadow: var(--openexam-shadow);
+  border: 1px solid var(--openexam-border);
+  padding: var(--openexam-space-6);
+  transition: all var(--openexam-transition-fast);
+}
+
+.student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--openexam-shadow-md);
+}
+
+.student-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--openexam-space-3) var(--openexam-space-6);
+  border-radius: var(--openexam-radius-full);
+  font-weight: var(--openexam-font-medium);
+  transition: all var(--openexam-transition-fast);
+  cursor: pointer;
+  border: none;
+  font-size: var(--openexam-font-sm);
+}
+
+.student-btn-primary {
+  background-color: var(--openexam-primary);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+}
+
+.student-btn-primary:hover {
+  background-color: var(--openexam-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px 0 rgba(59, 130, 246, 0.45);
+}
+
+.student-btn-secondary {
+  background-color: var(--openexam-bg-secondary);
+  color: var(--openexam-text-primary);
+  border: 1px solid var(--openexam-border);
+}
+
+.student-btn-secondary:hover {
+  background-color: var(--openexam-bg-tertiary);
+  transform: translateY(-1px);
+}
+
+.student-title {
+  font-size: var(--openexam-font-2xl);
+  font-weight: var(--openexam-font-bold);
+  color: var(--openexam-text-primary);
+  margin-bottom: var(--openexam-space-4);
+}
+
+.student-subtitle {
+  font-size: var(--openexam-font-lg);
+  font-weight: var(--openexam-font-medium);
+  color: var(--openexam-text-secondary);
+  margin-bottom: var(--openexam-space-3);
+}
+
+/* 考试界面特有样式 */
+.exam-container {
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-xl);
+  box-shadow: var(--openexam-shadow-lg);
+  padding: var(--openexam-space-8);
+  margin: var(--openexam-space-6);
+}
+
+.exam-question {
+  background: var(--openexam-bg-secondary);
+  border-radius: var(--openexam-radius-lg);
+  padding: var(--openexam-space-6);
+  margin-bottom: var(--openexam-space-6);
+  border-left: 4px solid var(--openexam-primary);
+}
+
+.exam-option {
+  display: flex;
+  align-items: center;
+  padding: var(--openexam-space-4);
+  margin-bottom: var(--openexam-space-3);
+  background: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-md);
+  border: 1px solid var(--openexam-border);
+  cursor: pointer;
+  transition: all var(--openexam-transition-fast);
+}
+
+.exam-option:hover {
+  border-color: var(--openexam-primary);
+  background-color: var(--openexam-bg-secondary);
+}
+
+.exam-option.selected {
+  border-color: var(--openexam-primary);
+  background-color: var(--openexam-primary-light);
+}
+

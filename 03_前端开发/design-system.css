@@ -1,0 +1,568 @@
+/* OpenExam 设计系统规范 */
+
+/* 引入图标库 */
+@import './icons.css';
+
+/* 颜色系统 */
+:root {
+  /* 主色调 */
+  --openexam-primary: #3b82f6; /* 蓝色 - 代表专业、信任 */
+  --openexam-primary-light: #93c5fd;
+  --openexam-primary-dark: #1d4ed8;
+  
+  /* 辅助色 */
+  --openexam-secondary: #8b5cf6; /* 紫色 - 代表创新、智慧 */
+  --openexam-secondary-light: #c4b5fd;
+  --openexam-secondary-dark: #6d28d9;
+  
+  /* 功能色 */
+  --openexam-success: #10b981; /* 绿色 - 成功 */
+  --openexam-warning: #f59e0b; /* 橙色 - 警告 */
+  --openexam-danger: #ef4444; /* 红色 - 危险 */
+  --openexam-info: #3b82f6; /* 蓝色 - 信息 */
+  
+  /* 中性色 */
+  --openexam-text-primary: #1e293b; /* 主文本 */
+  --openexam-text-secondary: #64748b; /* 次要文本 */
+  --openexam-text-tertiary: #94a3b8; /*  tertiary文本 */
+  
+  /* 背景色 */
+  --openexam-bg-primary: #ffffff;
+  --openexam-bg-secondary: #f8fafc;
+  --openexam-bg-tertiary: #f1f5f9;
+  --openexam-bg-quaternary: #e2e8f0;
+  
+  /* 边框色 */
+  --openexam-border: #e2e8f0;
+  --openexam-border-light: #f1f5f9;
+  --openexam-border-dark: #cbd5e1;
+  
+  /* 阴影 */
+  --openexam-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --openexam-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --openexam-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --openexam-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  /* 字体 */
+  --openexam-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  /* 字体大小 */
+  --openexam-font-xs: 0.75rem; /* 12px */
+  --openexam-font-sm: 0.875rem; /* 14px */
+  --openexam-font-base: 1rem; /* 16px */
+  --openexam-font-lg: 1.125rem; /* 18px */
+  --openexam-font-xl: 1.25rem; /* 20px */
+  --openexam-font-2xl: 1.5rem; /* 24px */
+  --openexam-font-3xl: 1.875rem; /* 30px */
+  --openexam-font-4xl: 2.25rem; /* 36px */
+  
+  /* 字体重量 */
+  --openexam-font-light: 300;
+  --openexam-font-normal: 400;
+  --openexam-font-medium: 500;
+  --openexam-font-semibold: 600;
+  --openexam-font-bold: 700;
+  
+  /* 间距 */
+  --openexam-space-1: 0.25rem; /* 4px */
+  --openexam-space-2: 0.5rem; /* 8px */
+  --openexam-space-3: 0.75rem; /* 12px */
+  --openexam-space-4: 1rem; /* 16px */
+  --openexam-space-5: 1.25rem; /* 20px */
+  --openexam-space-6: 1.5rem; /* 24px */
+  --openexam-space-8: 2rem; /* 32px */
+  --openexam-space-10: 2.5rem; /* 40px */
+  --openexam-space-12: 3rem; /* 48px */
+  --openexam-space-16: 4rem; /* 64px */
+  
+  /* 边框半径 */
+  --openexam-radius-sm: 0.25rem; /* 4px */
+  --openexam-radius: 0.375rem; /* 6px */
+  --openexam-radius-md: 0.5rem; /* 8px */
+  --openexam-radius-lg: 0.75rem; /* 12px */
+  --openexam-radius-xl: 1rem; /* 16px */
+  --openexam-radius-2xl: 1.5rem; /* 24px */
+  --openexam-radius-full: 9999px;
+  
+  /* 过渡 */
+  --openexam-transition-fast: 150ms ease-in-out;
+  --openexam-transition-normal: 200ms ease-in-out;
+  --openexam-transition-slow: 300ms ease-in-out;
+}
+
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--openexam-font-family);
+  font-size: var(--openexam-font-base);
+  line-height: 1.5;
+  color: var(--openexam-text-primary);
+  background-color: var(--openexam-bg-secondary);
+}
+
+/* 通用工具类 */
+.openexam-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--openexam-space-4);
+}
+
+.openexam-card {
+  background-color: var(--openexam-bg-primary);
+  border-radius: var(--openexam-radius-lg);
+  box-shadow: var(--openexam-shadow);
+  border: 1px solid var(--openexam-border);
+  padding: var(--openexam-space-6);
+}
+
+.openexam-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--openexam-space-3) var(--openexam-space-6);
+  border-radius: var(--openexam-radius-full);
+  font-weight: var(--openexam-font-medium);
+  transition: all var(--openexam-transition-fast);
+  cursor: pointer;
+  border: none;
+  font-size: var(--openexam-font-sm);
+}
+
+.openexam-btn-primary {
+  background-color: var(--openexam-primary);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+}
+
+.openexam-btn-primary:hover {
+  background-color: var(--openexam-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px 0 rgba(59, 130, 246, 0.45);
+}
+
+.openexam-btn-secondary {
+  background-color: var(--openexam-bg-secondary);
+  color: var(--openexam-text-primary);
+  border: 1px solid var(--openexam-border);
+}
+
+.openexam-btn-secondary:hover {
+  background-color: var(--openexam-bg-tertiary);
+  transform: translateY(-1px);
+}
+
+.openexam-input {
+  width: 100%;
+  padding: var(--openexam-space-3) var(--openexam-space-4);
+  border: 1px solid var(--openexam-border);
+  border-radius: var(--openexam-radius-md);
+  font-size: var(--openexam-font-base);
+  transition: all var(--openexam-transition-fast);
+  background-color: var(--openexam-bg-primary);
+}
+
+.openexam-input:focus {
+  outline: none;
+  border-color: var(--openexam-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.openexam-title {
+  font-size: var(--openexam-font-2xl);
+  font-weight: var(--openexam-font-bold);
+  color: var(--openexam-text-primary);
+  margin-bottom: var(--openexam-space-4);
+}
+
+.openexam-subtitle {
+  font-size: var(--openexam-font-lg);
+  font-weight: var(--openexam-font-medium);
+  color: var(--openexam-text-secondary);
+  margin-bottom: var(--openexam-space-3);
+}
+
+.openexam-text {
+  font-size: var(--openexam-font-base);
+  color: var(--openexam-text-primary);
+  line-height: 1.6;
+}
+
+.openexam-text-secondary {
+  font-size: var(--openexam-font-sm);
+  color: var(--openexam-text-secondary);
+  line-height: 1.5;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .openexam-container {
+    max-width: 960px;
+  }
+}
+
+@media (max-width: 992px) {
+  .openexam-container {
+    max-width: 720px;
+  }
+  
+  :root {
+    --openexam-font-4xl: 2rem; /* 32px */
+  }
+}
+
+@media (max-width: 768px) {
+  .openexam-container {
+    max-width: 540px;
+    padding: 0 var(--openexam-space-3);
+  }
+  
+  :root {
+    --openexam-font-2xl: 1.25rem; /* 20px */
+    --openexam-font-3xl: 1.5rem; /* 24px */
+    --openexam-font-4xl: 1.875rem; /* 30px */
+  }
+  
+  .openexam-card {
+    padding: var(--openexam-space-4);
+  }
+  
+  .openexam-btn {
+    padding: var(--openexam-space-2) var(--openexam-space-4);
+    font-size: var(--openexam-font-xs);
+  }
+  
+  .openexam-title {
+    font-size: var(--openexam-font-xl);
+  }
+  
+  .openexam-subtitle {
+    font-size: var(--openexam-font-sm);
+  }
+}
+
+@media (max-width: 576px) {
+  .openexam-container {
+    max-width: 100%;
+    padding: 0 var(--openexam-space-2);
+  }
+  
+  :root {
+    --openexam-font-xl: 1.125rem; /* 18px */
+    --openexam-font-2xl: 1.25rem; /* 20px */
+  }
+  
+  .openexam-card {
+    padding: var(--openexam-space-3);
+  }
+  
+  .openexam-btn {
+    padding: var(--openexam-space-2) var(--openexam-space-3);
+  }
+  
+  .toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .toolbar-actions {
+    justify-content: center;
+  }
+  
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-form .el-input,
+  .search-form .el-select,
+  .search-form .el-date-editor,
+  .search-form .el-input-number {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+/* 动画类 */
+.openexam-fade-in {
+  animation: fadeIn var(--openexam-transition-normal) ease-out;
+}
+
+.openexam-fade-out {
+  animation: fadeOut var(--openexam-transition-normal) ease-in;
+}
+
+.openexam-slide-in-left {
+  animation: slideInLeft var(--openexam-transition-normal) ease-out;
+}
+
+.openexam-slide-in-right {
+  animation: slideInRight var(--openexam-transition-normal) ease-out;
+}
+
+.openexam-slide-in-up {
+  animation: slideInUp var(--openexam-transition-normal) ease-out;
+}
+
+.openexam-slide-in-down {
+  animation: slideInDown var(--openexam-transition-normal) ease-out;
+}
+
+.openexam-pulse {
+  animation: pulse 2s infinite;
+}
+
+.openexam-bounce {
+  animation: bounce 1s infinite;
+}
+
+.openexam-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* 微交互效果 */
+.openexam-hover-lift {
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--openexam-shadow-md);
+}
+
+.openexam-hover-scale {
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.openexam-hover-glow {
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-hover-glow:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* 按钮微交互 */
+.openexam-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.openexam-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.openexam-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.openexam-btn:active::before {
+  width: 400px;
+  height: 400px;
+  transition: width 0.3s, height 0.3s;
+}
+
+/* 输入框微交互 */
+.openexam-input {
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-input:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* 卡片微交互 */
+.openexam-card {
+  transition: all var(--openexam-transition-fast);
+}
+
+.openexam-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--openexam-shadow-md);
+}
+
+/* 加载动画 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.openexam-loading {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--openexam-border);
+  border-radius: 50%;
+  border-top-color: var(--openexam-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+/* 进度条动画 */
+@keyframes progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.openexam-progress {
+  height: 4px;
+  background: var(--openexam-bg-tertiary);
+  border-radius: var(--openexam-radius-full);
+  overflow: hidden;
+}
+
+.openexam-progress-bar {
+  height: 100%;
+  background: var(--openexam-primary);
+  border-radius: var(--openexam-radius-full);
+  animation: progress 2s ease-out;
+}
+
+/* 教育相关的视觉元素 */
+.openexam-education-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--openexam-radius-full);
+  background-color: var(--openexam-primary-light);
+  color: var(--openexam-primary);
+  margin-right: var(--openexam-space-3);
+}
+
+.openexam-exam-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--openexam-radius-full);
+  background-color: var(--openexam-secondary-light);
+  color: var(--openexam-secondary);
+  margin-right: var(--openexam-space-3);
+}

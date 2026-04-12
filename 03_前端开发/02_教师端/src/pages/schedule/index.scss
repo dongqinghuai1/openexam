@@ -1,105 +1,125 @@
 .schedule-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #f5f7fb;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.header,
+.section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px 30px;
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
+}
+
+.title,
+.date,
+.section-title,
+.time,
+.class-name,
+.course-name,
+.empty,
+.day-name,
+.day-date {
+  display: block;
 }
 
 .title {
-  font-size: 20px;
-  color: white;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
 }
 
 .date {
-  font-size: 14px;
-  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  color: #667085;
 }
 
 .section {
   padding: 20px;
+  margin-bottom: 16px;
 }
 
 .section-title {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 15px;
-  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 14px;
 }
 
 .schedule-card {
-  background: white;
-  padding: 20px;
+  padding: 16px;
   border-radius: 12px;
-  margin-bottom: 15px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 12px;
 }
 
 .time {
-  font-size: 14px;
-  color: #667eea;
-  margin-bottom: 8px;
-  display: block;
+  font-size: 12px;
+  color: #667085;
+  margin-bottom: 6px;
 }
 
 .class-name {
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
-  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
 }
 
 .course-name {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 15px;
-  display: block;
+  font-size: 13px;
+  color: #667085;
+  margin-bottom: 10px;
 }
 
 .start-btn {
-  background: #667eea;
-  color: white;
-  font-size: 14px;
-  padding: 10px 20px;
-  border-radius: 6px;
+  min-height: 34px;
+  border-radius: 10px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 13px;
+  margin-top: 10px;
 }
 
 .empty {
   text-align: center;
-  color: #999;
-  padding: 40px 0;
+  color: #98a2b3;
+  padding: 28px 0;
 }
 
 .week-list {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding-bottom: 10px;
 }
 
 .day-item {
-  min-width: 80px;
-  padding: 15px;
-  background: white;
-  border-radius: 8px;
-  text-align: center;
+  min-width: 120px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
 }
 
 .day-name {
-  font-size: 14px;
-  color: #333;
-  display: block;
-  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
 }
 
 .day-date {
   font-size: 12px;
-  color: #999;
+  color: #667085;
 }
