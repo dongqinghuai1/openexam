@@ -58,6 +58,30 @@ export function checkPermissionAndExecute(permissionCode, callback) {
 }
 
 /**
+ * 检查是否有多个权限中的任意一个
+ * @param {Array} permissionCodes - 权限编码数组
+ * @returns {boolean} - 是否有任意一个权限
+ */
+export function hasAnyPermission(permissionCodes) {
+  if (typeof permissionCodes === 'string') {
+    permissionCodes = [permissionCodes]
+  }
+  return permissionCodes.some(code => checkPermission(code))
+}
+
+/**
+ * 检查是否拥有所有指定权限
+ * @param {Array} permissionCodes - 权限编码数组
+ * @returns {boolean} - 是否拥有所有权限
+ */
+export function hasAllPermissions(permissionCodes) {
+  if (typeof permissionCodes === 'string') {
+    permissionCodes = [permissionCodes]
+  }
+  return permissionCodes.every(code => checkPermission(code))
+}
+
+/**
  * 权限检查指令
  */
 export const permissionDirective = {
@@ -75,4 +99,50 @@ export const permissionDirective = {
       el.style.display = ''
     }
   }
+}
+
+// 路由权限映射
+export const routePermissionMap = {
+  '/dashboard': 'dashboard_view',
+  '/system/users': 'user_management',
+  '/system/roles': 'role_management',
+  '/system/menus': 'menu_management',
+  '/system/logs': 'log_management',
+  '/system/notifications': 'notification_management',
+  '/edu/students': 'student_management',
+  '/edu/teachers': 'teacher_management',
+  '/edu/courses': 'course_management',
+  '/edu/classes': 'class_management',
+  '/edu/schedules': 'schedule_management',
+  '/classroom/list': 'classroom_view',
+  '/classroom/records': 'recording_view',
+  '/finance/orders': 'order_management',
+  '/finance/refunds': 'refund_management',
+  '/exam/questions': 'question_management',
+  '/exam/papers': 'paper_management',
+  '/exam/exams': 'exam_management',
+  '/exam/scores': 'score_view',
+  '/statistics/revenue': 'revenue_statistics',
+}
+
+/**
+ * 检查路由权限
+ * @param {string} path - 路由路径
+ * @returns {boolean} - 是否有权限访问
+ */
+export function checkRoutePermission(path) {
+  const userStore = useUserStore()
+  
+  // 超级管理员拥有所有权限
+  if (userStore.userInfo?.is_superuser) {
+    return true
+  }
+  
+  // 检查路由权限映射
+  const requiredPermission = routePermissionMap[path]
+  if (!requiredPermission) {
+    return true // 没有配置的路由默认放行
+  }
+  
+  return checkPermission(requiredPermission)
 }
