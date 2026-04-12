@@ -13,13 +13,17 @@ class PermissionMiddleware(MiddlewareMixin):
         '/api/users/register', 
         '/api/users/reset_password',
         '/api/users/send_sms_code',
+        '/api/users/me',  # 无斜杠版本
     ]
     
     def process_request(self, request):
+        # 处理路径（统一处理带斜杠和不带斜杠的情况）
+        path = request.path.rstrip('/')
+        
         # 跳过不需要认证的路径
-        path = request.path
-        if path in self.EXEMPT_PATHS:
-            return None
+        for exempt_path in self.EXEMPT_PATHS:
+            if path == exempt_path or path == exempt_path.rstrip('/'):
+                return None
         
         # 跳过静态文件和媒体文件
         if path.startswith('/static/') or path.startswith('/media/'):
@@ -63,170 +67,95 @@ class PermissionMiddleware(MiddlewareMixin):
         if user.is_superuser:
             return None
         
-        # 检查API权限
-        method = request.method
+        # 检查用户是否有权访问自己的数据
+        if self._check_own_data_permission(path, user):
+            return None
         
-        # 根据API路径和方法确定需要的权限
-        required_permission = self._get_required_permission(path, method)
+        # 检查API权限
+        required_permission = self._get_required_permission(path)
         
         if required_permission and required_permission not in user_permissions:
             return JsonResponse({'error': f'权限不足，需要权限: {required_permission}'}, status=403)
         
         return None
     
-    def _get_required_permission(self, path, method):
-        """根据API路径和方法确定需要的权限"""
-        # 用户管理
-        if path.startswith('/api/users/'):
-            if path == '/api/users/roles/' and method == 'GET':
-                return 'role_management'
-            if path == '/api/users/menus/' and method == 'GET':
-                return 'menu_management'
-            if path == '/api/users/permissions/' and method == 'GET':
-                return 'permission_management'
-            if path == '/api/users/operation-logs/' and method == 'GET':
-                return 'log_management'
-            if path == '/api/users/notifications/' and method == 'GET':
-                return 'notification_management'
-            if path == '/api/users/' and method == 'GET':
-                return 'user_management'
-            if path == '/api/users/' and method == 'POST':
-                return 'user_create'
-            if path == '/api/users/' and method == 'PUT':
-                return 'user_edit'
-            if path == '/api/users/' and method == 'DELETE':
-                return 'user_delete'
+    def _check_own_data_permission(self, path, user):
+        """检查用户是否有权访问自己的数据"""
+        # 允许访问自己的用户信息
+        if path == '/api/users/me':
+            return True
+        
+        # 检查是否是获取单个资源的GET请求
+        # 格式: /api/xxx/{id}
+        parts = path.strip('/').split('/')
+        if len(parts) >= 3 and parts[-1].isdigit():
+            resource_id = int(parts[-1])
+            resource_type = parts[1]  # students, teachers 等
+            
+            # 学生查看自己的信息
+            if resource_type == 'students':
+                if hasattr(user, 'student') and user.student.id == resource_id:
+                    return True
+                if getattr(user, 'student_id', None) == resource_id:
+                    return True
+            
+            # 教师查看自己的信息
+            if resource_type == 'teachers':
+                if hasattr(user, 'teacher') and user.teacher.id == resource_id:
+                    return True
+                if getattr(user, 'teacher_id', None) == resource_id:
+                    return True
+        
+        return False
+    
+    def _get_required_permission(self, path):
+        """根据API路径确定需要的权限"""
+        
+        # 允许访问自己的用户信息
+        if path == '/api/users/me':
+            return None
+        
+        # 系统管理（不包括个人中心）
+        if path.startswith('/api/users/') and not path.startswith('/api/users/me'):
+            return 'system_management'
         
         # 教务管理
-        if path.startswith('/api/edu/students/'):
-            if method == 'GET':
-                return 'student_management'
-            if method == 'POST':
-                return 'student_create'
-            if method == 'PUT':
-                return 'student_edit'
-            if method == 'DELETE':
-                return 'student_delete'
-        
-        if path.startswith('/api/edu/teachers/'):
-            if method == 'GET':
-                return 'teacher_management'
-            if method == 'POST':
-                return 'teacher_create'
-            if method == 'PUT':
-                return 'teacher_edit'
-            if method == 'DELETE':
-                return 'teacher_delete'
-        
-        if path.startswith('/api/edu/courses/'):
-            if method == 'GET':
-                return 'course_management'
-            if method == 'POST':
-                return 'course_create'
-            if method == 'PUT':
-                return 'course_edit'
-            if method == 'DELETE':
-                return 'course_delete'
-        
-        if path.startswith('/api/edu/classes/'):
-            if method == 'GET':
-                return 'class_management'
-            if method == 'POST':
-                return 'class_create'
-            if method == 'PUT':
-                return 'class_edit'
-            if method == 'DELETE':
-                return 'class_delete'
-        
-        if path.startswith('/api/edu/schedules/'):
-            if method == 'GET':
-                return 'schedule_management'
-            if method == 'POST':
-                return 'schedule_create'
-            if method == 'PUT':
-                return 'schedule_edit'
-            if method == 'DELETE':
-                return 'schedule_delete'
-        
-        if path.startswith('/api/edu/reschedules/'):
-            if method == 'GET':
-                return 'reschedule_management'
-        
-        if path.startswith('/api/edu/leaves/'):
-            if method == 'GET':
-                return 'leave_management'
-        
-        if path.startswith('/api/edu/student-hours/'):
-            if method == 'GET':
-                return 'hours_account_management'
-        
-        if path.startswith('/api/edu/hours-flows/'):
-            if method == 'GET':
-                return 'hours_flow_view'
+        if path.startswith('/api/edu/students'):
+            return 'student_management'
+        if path.startswith('/api/edu/teachers'):
+            return 'teacher_management'
+        if path.startswith('/api/edu/courses'):
+            return 'course_management'
+        if path.startswith('/api/edu/classes'):
+            return 'class_management'
+        if path.startswith('/api/edu/schedules'):
+            return 'schedule_management'
+        if path.startswith('/api/edu/reschedules'):
+            return 'reschedule_management'
+        if path.startswith('/api/edu/leaves'):
+            return 'leave_management'
+        if path.startswith('/api/edu/student-hours') or path.startswith('/api/edu/hours-flows'):
+            return 'hours_management'
+        if path.startswith('/api/edu/classrooms'):
+            return 'class_management'  # 教室管理用班级管理权限
+        if path.startswith('/api/edu/recording'):
+            return 'schedule_management'  # 录播记录用排课权限
         
         # 考试管理
-        if path.startswith('/api/exam/questions/'):
-            if method == 'GET':
-                return 'question_management'
-            if method == 'POST':
-                return 'question_create'
-            if method == 'PUT':
-                return 'question_edit'
-            if method == 'DELETE':
-                return 'question_delete'
-            if '/import/' in path and method == 'POST':
-                return 'question_import'
-            if '/export/' in path and method == 'GET':
-                return 'question_export'
-        
-        if path.startswith('/api/exam/papers/'):
-            if method == 'GET':
-                return 'paper_management'
-            if method == 'POST':
-                return 'paper_create'
-            if method == 'PUT':
-                return 'paper_edit'
-            if method == 'DELETE':
-                return 'paper_delete'
-        
-        if path.startswith('/api/exam/exams/'):
-            if method == 'GET':
-                return 'exam_management'
-            if method == 'POST':
-                return 'exam_create'
-            if method == 'PUT':
-                return 'exam_edit'
-            if method == 'DELETE':
-                return 'exam_delete'
-            if '/publish/' in path and method == 'POST':
-                return 'exam_publish'
-            if '/correct/' in path and method == 'PATCH':
-                return 'score_correct'
-        
-        if path.startswith('/api/exam/scores/'):
-            if method == 'GET':
-                return 'score_view'
+        if path.startswith('/api/exam/questions'):
+            return 'question_management'
+        if path.startswith('/api/exam/papers'):
+            return 'paper_management'
+        if path.startswith('/api/exam/exams'):
+            return 'exam_management'
+        if path.startswith('/api/exam/scores'):
+            return 'score_management'
         
         # 财务管理
-        if path.startswith('/api/finance/orders/'):
-            if method == 'GET':
-                return 'order_management'
-            if method == 'POST':
-                return 'order_create'
-            if method == 'PUT':
-                return 'order_edit'
-            if method == 'DELETE':
-                return 'order_delete'
-            if '/pay/' in path and method == 'POST':
-                return 'order_pay'
-        
-        if path.startswith('/api/finance/refunds/'):
-            if method == 'GET':
-                return 'refund_management'
-            if method == 'POST':
-                return 'refund_create'
-            if method == 'PATCH':
-                return 'refund_approve'
+        if path.startswith('/api/finance/orders'):
+            return 'order_management'
+        if path.startswith('/api/finance/refunds'):
+            return 'refund_management'
         
         return None
 

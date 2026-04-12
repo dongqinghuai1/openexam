@@ -15,11 +15,23 @@ print('Login status:', login_response.status_code)
 print('Login response:', login_response.json())
 
 token = login_response.json().get('token')
-print('Token:', token)
+print('Token:', token[:50] + '...')
 
 # 使用token访问API
-roles_url = 'http://localhost:8000/api/users/roles/'
 headers = {'Authorization': f'Bearer {token}'}
-roles_response = requests.get(roles_url, headers=headers)
-print('Roles status:', roles_response.status_code)
-print('Roles response:', roles_response.text)
+
+modules = [
+    '/api/users/roles/',
+    '/api/edu/students/',
+    '/api/edu/teachers/',
+    '/api/edu/classes/',
+    '/api/edu/courses/',
+    '/api/exam/questions/',
+    '/api/exam/papers/',
+    '/api/finance/orders/',
+]
+
+print('\nTesting API access:')
+for m in modules:
+    r = requests.get(f'http://localhost:8000{m}', headers=headers)
+    print(f'{m}: {r.status_code}')

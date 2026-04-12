@@ -120,6 +120,23 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data['phone'] = None
         if validated_data.get('email', None) == '':
             validated_data['email'] = None
+        
+        # 检查唯一性冲突（排除自己）
+        username = validated_data.get('username')
+        phone = validated_data.get('phone')
+        email = validated_data.get('email')
+        
+        errors = {}
+        if username and User.objects.exclude(id=instance.id).filter(username=username).exists():
+            errors['username'] = '用户名已存在'
+        if phone and User.objects.exclude(id=instance.id).filter(phone=phone).exists():
+            errors['phone'] = '手机号已被使用'
+        if email and User.objects.exclude(id=instance.id).filter(email=email).exists():
+            errors['email'] = '邮箱已被使用'
+        
+        if errors:
+            raise serializers.ValidationError(errors)
+        
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
@@ -146,6 +163,23 @@ class UserCreateSerializer(serializers.ModelSerializer):
             validated_data['phone'] = None
         if validated_data.get('email', '') == '':
             validated_data['email'] = None
+        
+        # 检查唯一性冲突
+        username = validated_data.get('username')
+        phone = validated_data.get('phone')
+        email = validated_data.get('email')
+        
+        errors = {}
+        if User.objects.filter(username=username).exists():
+            errors['username'] = '用户名已存在'
+        if phone and User.objects.filter(phone=phone).exists():
+            errors['phone'] = '手机号已被使用'
+        if email and User.objects.filter(email=email).exists():
+            errors['email'] = '邮箱已被使用'
+        
+        if errors:
+            raise serializers.ValidationError(errors)
+        
         user = User(**validated_data)
         user.set_password(password)
         user.save()
