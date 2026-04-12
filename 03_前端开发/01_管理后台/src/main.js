@@ -7,6 +7,7 @@ import App from './App.vue'
 import router from './router'
 import './design-system.css'
 import './icons.css'
+import { permissionDirective } from './utils/permission'
 
 const app = createApp(App)
 
@@ -17,5 +18,8 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
+
+// 注册权限检查指令
+app.directive('permission', permissionDirective)
 
 app.mount('#app')

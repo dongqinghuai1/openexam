@@ -10,6 +10,7 @@ from .serializers import QuestionSerializer, PaperSerializer, ExamSerializer, Sc
 from edu.models import Student, Teacher, Subject
 
 
+
 class QuestionViewSet(viewsets.ModelViewSet):
     """题目管理视图"""
     queryset = Question.objects.all()
@@ -354,10 +355,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         student_id = request.data.get('student_id')
 
         if not student_id:
-            student = Student.objects.order_by('id').first()
-            if not student:
-                return Response({'error': '缺少 student_id，且系统中不存在学生数据'}, status=status.HTTP_400_BAD_REQUEST)
-            student_id = student.id
+            return Response({'error': '缺少 student_id 参数'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             student = Student.objects.get(id=student_id)

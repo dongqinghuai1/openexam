@@ -11,6 +11,7 @@ from .serializers import UserSerializer, UserCreateSerializer, RoleSerializer, M
 from .serializers_log import OperationLogSerializer
 from .authentication import generate_token, refresh_access_token
 from .verification import generate_verify_code, store_verify_code, verify_code, clear_verify_code, send_email_code, ensure_role, ensure_user_role, create_related_profile
+from .permissions import permission_required
 
 
 class LoginView(APIView):
@@ -136,6 +137,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'login':
             return [permissions.AllowAny()]
+        elif self.action in ['logout', 'refresh', 'me', 'change_password']:
+            return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
     def get_serializer_class(self):
@@ -216,11 +219,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class RoleViewSet(viewsets.ModelViewSet):
     """角色管理视图"""
-    queryset = Role.objects.all()
+    queryset = Role.objects.filter(status=True)
     serializer_class = RoleSerializer
     permission_classes = [permissions.IsAuthenticated]
     search_fields = ['name', 'code']
     filterset_fields = ['status']
+
+    def get_queryset(self):
+        return Role.objects.filter(status=True)
 
     def perform_destroy(self, instance):
         instance.status = False

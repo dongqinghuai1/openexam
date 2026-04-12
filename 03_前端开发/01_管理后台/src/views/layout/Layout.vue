@@ -77,8 +77,63 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
+// 检查用户是否有访问权限
+function hasPermission(route) {
+  // 超级管理员拥有所有权限
+  if (userStore.userInfo?.is_superuser) {
+    return true
+  }
+  
+  // 检查路由是否需要权限
+  if (!route.meta || !route.meta.permission) {
+    return true
+  }
+  
+  // 检查用户是否有该权限
+  const userPermissions = getUserPermissions()
+  return userPermissions.includes(route.meta.permission)
+}
+
+// 获取用户权限
+function getUserPermissions() {
+  const permissions = new Set()
+  
+  // 从用户角色中获取权限
+  if (userStore.userInfo?.roles) {
+    userStore.userInfo.roles.forEach(role => {
+      if (role.permissions) {
+        role.permissions.forEach(permission => {
+          permissions.add(permission.code)
+        })
+      }
+    })
+  }
+  
+  return Array.from(permissions)
+}
+
+// 过滤菜单，只显示用户有权限的菜单项
+function filterMenus(routes) {
+  return routes.filter(route => {
+    // 检查当前路由是否有权限
+    if (!hasPermission(route)) {
+      return false
+    }
+    
+    // 检查子路由
+    if (route.children && route.children.length > 0) {
+      route.children = filterMenus(route.children)
+      // 如果子路由都没有权限，则隐藏当前路由
+      return route.children.length > 0
+    }
+    
+    return true
+  })
+}
+
 const menus = computed(() => {
-  return router.getRoutes().filter(r => r.meta?.title && r.meta?.icon && !r.meta?.hidden)
+  const allRoutes = router.getRoutes().filter(r => r.meta?.title && r.meta?.icon && !r.meta?.hidden)
+  return filterMenus(allRoutes)
 })
 
 const activeMenu = computed(() => route.path)

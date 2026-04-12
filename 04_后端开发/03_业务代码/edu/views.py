@@ -18,6 +18,7 @@ from .serializers import (
 )
 
 
+
 class SubjectViewSet(viewsets.ModelViewSet):
     """科目管理视图"""
     queryset = Subject.objects.all()
@@ -135,7 +136,11 @@ class EduClassViewSet(viewsets.ModelViewSet):
         if edu_class.class_students.filter(status='studying').count() >= edu_class.max_students:
             return Response({'error': '班级人数已满'}, status=status.HTTP_400_BAD_REQUEST)
 
-        student = Student.objects.get(id=student_id)
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return Response({'error': '学生不存在'}, status=status.HTTP_404_NOT_FOUND)
+
         class_student, created = ClassStudent.objects.update_or_create(
             edu_class=edu_class, student=student,
             defaults={'join_date': join_date, 'status': 'studying'}
@@ -169,12 +174,14 @@ class ScheduleViewSet(viewsets.ModelViewSet):
     }
 
     def perform_create(self, serializer):
+        # 先创建临时对象来检测冲突
         schedule = serializer.save(created_by=self.request.user)
         # 检测冲突
         conflicts = self.check_conflicts(schedule)
         if conflicts:
-            # 可以选择返回警告或阻止创建
-            pass
+            # 阻止创建冲突的排课
+            schedule.delete()
+            raise ValidationError({'error': f'排课冲突: {"，".join(conflicts)}'})
 
     def check_conflicts(self, schedule):
         """检测排课冲突"""

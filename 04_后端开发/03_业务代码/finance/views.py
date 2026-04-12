@@ -9,6 +9,7 @@ from .serializers import OrderSerializer, PaymentRecordSerializer, RefundRecordS
 from edu.models import StudentHoursAccount, HoursFlow
 
 
+
 class OrderViewSet(viewsets.ModelViewSet):
     """订单管理视图"""
     queryset = Order.objects.all()
@@ -27,33 +28,39 @@ class OrderViewSet(viewsets.ModelViewSet):
         if order.status != 'pending':
             return Response({'error': '订单状态不正确'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # TODO: 调用支付接口
-        order.status = 'paid'
-        order.paid_at = timezone.now()
-        order.save()
+        # 模拟支付接口调用
+        # 实际项目中应该调用真实的支付接口
+        payment_success = True
+        
+        if payment_success:
+            order.status = 'paid'
+            order.paid_at = timezone.now()
+            order.save()
 
-        PaymentRecord.objects.create(
-            order=order,
-            amount=order.final_amount,
-            payment_type=order.payment_type,
-            transaction_id=f'TXN{timezone.now().strftime("%Y%m%d%H%M%S")}',
-            status='success',
-            paid_at=order.paid_at,
-        )
-
-        # 创建课时账户
-        if order.course:
-            StudentHoursAccount.objects.get_or_create(
-                student=order.student,
-                course=order.course,
-                defaults={
-                    'total_hours': order.quantity,
-                    'expire_date': timezone.now().date() + timezone.timedelta(days=365),
-                    'status': 'active'
-                }
+            PaymentRecord.objects.create(
+                order=order,
+                amount=order.final_amount,
+                payment_type=order.payment_type,
+                transaction_id=f'TXN{timezone.now().strftime("%Y%m%d%H%M%S")}',
+                status='success',
+                paid_at=order.paid_at,
             )
 
-        return Response(OrderSerializer(order).data)
+            # 创建课时账户
+            if order.course:
+                StudentHoursAccount.objects.get_or_create(
+                    student=order.student,
+                    course=order.course,
+                    defaults={
+                        'total_hours': order.quantity,
+                        'expire_date': timezone.now().date() + timezone.timedelta(days=365),
+                        'status': 'active'
+                    }
+                )
+
+            return Response(OrderSerializer(order).data)
+        else:
+            return Response({'error': '支付失败'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):

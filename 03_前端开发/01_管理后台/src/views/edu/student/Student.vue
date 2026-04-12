@@ -289,16 +289,35 @@ function handleAdd() {
   dialogTitle.value = '新增学生'
   Object.assign(form, { id: null, name: '', phone: '', gender: 'male', birthday: '', grade: '', school: '', parent_name: '', parent_phone: '', status: 'active', enrollment_date: '' })
   dialogVisible.value = true
+  // 启用表单编辑
+  setTimeout(() => {
+    formRef.value?.fields.forEach(field => {
+      field.disabled = false
+    })
+  }, 100)
 }
 
 function handleEdit(row) {
   dialogTitle.value = '编辑学生'
   Object.assign(form, { ...row })
   dialogVisible.value = true
+  // 启用表单编辑
+  setTimeout(() => {
+    formRef.value?.fields.forEach(field => {
+      field.disabled = false
+    })
+  }, 100)
 }
 
 function handleView(row) {
-  ElMessage.info('查看详情: ' + row.name)
+  // 显示学生详情对话框
+  dialogTitle.value = '学生详情'
+  Object.assign(form, { ...row })
+  dialogVisible.value = true
+  // 禁用表单编辑
+  formRef.value?.fields.forEach(field => {
+    field.disabled = true
+  })
 }
 
 async function handleHours(row) {

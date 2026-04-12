@@ -42,6 +42,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'users.middleware.PermissionMiddleware',
     'users.middleware.OperationLogMiddleware',
 ]
 
@@ -153,7 +154,7 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-for-jwt-token-generation')
 JWT_ACCESS_TOKEN_LIFETIME = 60 * 60 * 2
 JWT_REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 7
 
