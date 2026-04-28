@@ -16,6 +16,8 @@ from .serializers import (
     ScheduleSerializer, RescheduleRecordSerializer, LeaveRecordSerializer,
     StudentHoursAccountSerializer, HoursFlowSerializer
 )
+from .services import HoursService
+from users.mixins import ApprovalActionMixin
 
 
 
@@ -228,46 +230,14 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         if schedule.status == 'completed':
             return Response({'error': '当前课次已完成'}, status=status.HTTP_400_BAD_REQUEST)
 
-        class_students = schedule.edu_class.class_students.filter(status='studying')
-        for cs in class_students:
-            try:
-                account = StudentHoursAccount.objects.get(
-                    student=cs.student,
-                    course=schedule.course,
-                    status='active'
-                )
-            except StudentHoursAccount.DoesNotExist:
-                continue
-
-            already_deducted = HoursFlow.objects.filter(
-                account=account,
-                schedule=schedule,
-                type='deduct'
-            ).exists()
-            if already_deducted:
-                continue
-
-            before = account.remaining_hours
-            account.used_hours += Decimal('1.0')
-            account.save(update_fields=['used_hours', 'updated_at'])
-
-            HoursFlow.objects.create(
-                account=account,
-                schedule=schedule,
-                type='deduct',
-                hours=Decimal('1.0'),
-                balance_before=before,
-                balance_after=account.remaining_hours,
-                note=f'上课扣课 - {schedule.date}',
-                operator=request.user,
-            )
+        HoursService.deduct_hours(schedule, operator=request.user)
 
         schedule.status = 'completed'
         schedule.save(update_fields=['status', 'updated_at'])
         return Response(self.get_serializer(schedule).data)
 
 
-class RescheduleRecordViewSet(viewsets.ModelViewSet):
+class RescheduleRecordViewSet(ApprovalActionMixin, viewsets.ModelViewSet):
     """调课记录视图"""
     queryset = RescheduleRecord.objects.all()
     serializer_class = RescheduleRecordSerializer
@@ -278,26 +248,6 @@ class RescheduleRecordViewSet(viewsets.ModelViewSet):
         return RescheduleRecord.objects.select_related(
             'original_schedule', 'new_schedule', 'applicant', 'approver'
         ).all()
-
-    @action(detail=True, methods=['post'])
-    def approve(self, request, pk=None):
-        record = self.get_object()
-        if record.status != 'pending':
-            return Response({'error': '当前调课记录不可审批'}, status=status.HTTP_400_BAD_REQUEST)
-        record.status = 'approved'
-        record.approver = request.user
-        record.save(update_fields=['status', 'approver'])
-        return Response(self.get_serializer(record).data)
-
-    @action(detail=True, methods=['post'])
-    def reject(self, request, pk=None):
-        record = self.get_object()
-        if record.status != 'pending':
-            return Response({'error': '当前调课记录不可审批'}, status=status.HTTP_400_BAD_REQUEST)
-        record.status = 'rejected'
-        record.approver = request.user
-        record.save(update_fields=['status', 'approver'])
-        return Response(self.get_serializer(record).data)
 
 
 class LeaveRecordViewSet(viewsets.ModelViewSet):
@@ -357,15 +307,7 @@ class StudentHoursAccountViewSet(viewsets.ModelViewSet):
         account.gift_hours += hours
         account.save(update_fields=['gift_hours', 'updated_at'])
 
-        HoursFlow.objects.create(
-            account=account,
-            type='gift',
-            hours=hours,
-            balance_before=before,
-            balance_after=account.remaining_hours,
-            note=note,
-            operator=request.user,
-        )
+        HoursService.add_flow(account, 'gift', hours, note, operator=request.user)
         return Response(StudentHoursAccountSerializer(account).data)
 
     @action(detail=True, methods=['post'])
@@ -390,15 +332,7 @@ class StudentHoursAccountViewSet(viewsets.ModelViewSet):
             account.status = 'frozen'
         account.save(update_fields=['frozen_hours', 'status', 'updated_at'])
 
-        HoursFlow.objects.create(
-            account=account,
-            type='freeze',
-            hours=hours,
-            balance_before=before,
-            balance_after=account.remaining_hours,
-            note=note,
-            operator=request.user,
-        )
+        HoursService.add_flow(account, 'freeze', hours, note, operator=request.user)
         return Response(StudentHoursAccountSerializer(account).data)
 
     @action(detail=True, methods=['post'])
@@ -423,15 +357,7 @@ class StudentHoursAccountViewSet(viewsets.ModelViewSet):
             account.status = 'active'
         account.save(update_fields=['frozen_hours', 'status', 'updated_at'])
 
-        HoursFlow.objects.create(
-            account=account,
-            type='unfreeze',
-            hours=hours,
-            balance_before=before,
-            balance_after=account.remaining_hours,
-            note=note,
-            operator=request.user,
-        )
+        HoursService.add_flow(account, 'unfreeze', hours, note, operator=request.user)
         return Response(StudentHoursAccountSerializer(account).data)
 
 

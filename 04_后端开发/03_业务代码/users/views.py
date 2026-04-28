@@ -135,9 +135,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filterset_fields = ['status', 'gender']
 
     def get_permissions(self):
-        if self.action == 'login':
-            return [permissions.AllowAny()]
-        elif self.action in ['logout', 'refresh', 'me', 'change_password']:
+        if self.action in ['logout', 'refresh', 'me', 'change_password']:
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
@@ -151,32 +149,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if user.is_superuser:
             return User.objects.all()
         return User.objects.filter(is_superuser=False)
-
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
-    def login(self, request):
-        """用户登录"""
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        login_user = User.objects.filter(
-            Q(username=username) | Q(phone=username) | Q(email=username)
-        ).first()
-        auth_username = login_user.username if login_user else username
-
-        user = authenticate(username=auth_username, password=password)
-        if not user:
-            return Response({'error': '用户名或密码错误'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        if user.status == 'inactive':
-            return Response({'error': '账号已被禁用'}, status=status.HTTP_403_FORBIDDEN)
-
-        token_data = generate_token(user.id, user.username)
-        return Response({
-            'token': token_data['access_token'],
-            'refresh_token': token_data['refresh_token'],
-            'expires_in': token_data['expires_in'],
-            'user': UserSerializer(user).data
-        })
 
     @action(detail=False, methods=['post'])
     def logout(self, request):
@@ -250,25 +222,6 @@ class MenuViewSet(viewsets.ModelViewSet):
         user = self.request.user
         permissions = user.roles.filter(status=True).values_list('permissions__code', flat=True)
         return queryset.filter(visible=True, permission__in=permissions).distinct()
-
-    def create(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        parent_id = request.data.get('parent')
-        if parent_id == '' or parent_id is None:
-            parent_id = None
-        if Menu.objects.filter(name=name, parent_id=parent_id).exists():
-            return Response({'error': '该父菜单下已存在同名菜单'}, status=status.HTTP_400_BAD_REQUEST)
-        return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        parent_id = request.data.get('parent')
-        if parent_id == '' or parent_id is None:
-            parent_id = None
-        instance = self.get_object()
-        if Menu.objects.exclude(id=instance.id).filter(name=name, parent_id=parent_id).exists():
-            return Response({'error': '该父菜单下已存在同名菜单'}, status=status.HTTP_400_BAD_REQUEST)
-        return super().update(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def tree(self, request):

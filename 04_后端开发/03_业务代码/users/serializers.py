@@ -2,6 +2,15 @@ from rest_framework import serializers
 from .models import User, Role, Permission, Menu, UserRole, Notification
 
 
+def normalize_empty_strings(validated_data):
+    """将空字符串转为 None"""
+    if validated_data.get('phone', '') == '':
+        validated_data['phone'] = None
+    if validated_data.get('email', '') == '':
+        validated_data['email'] = None
+    return validated_data
+
+
 class SendSmsCodeSerializer(serializers.Serializer):
     email = serializers.EmailField()
     scene = serializers.ChoiceField(choices=['register', 'reset_password'])
@@ -100,10 +109,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         role_ids = validated_data.pop('role_ids', [])
         password = validated_data.pop('password', None)
-        if validated_data.get('phone', '') == '':
-            validated_data['phone'] = None
-        if validated_data.get('email', '') == '':
-            validated_data['email'] = None
+        normalize_empty_strings(validated_data)
         user = User(**validated_data)
         if password:
             user.set_password(password)
@@ -159,11 +165,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         role_ids = validated_data.pop('role_ids', [])
         password = validated_data.pop('password')
-        if validated_data.get('phone', '') == '':
-            validated_data['phone'] = None
-        if validated_data.get('email', '') == '':
-            validated_data['email'] = None
-        
+        normalize_empty_strings(validated_data)
+
         # 检查唯一性冲突
         username = validated_data.get('username')
         phone = validated_data.get('phone')

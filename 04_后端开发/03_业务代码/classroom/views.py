@@ -5,9 +5,11 @@ from django.utils import timezone
 from django.db.models import Q
 from decimal import Decimal
 from edu.models import Schedule, StudentHoursAccount, HoursFlow, Teacher, Student
+from edu.services import HoursService
+from users.mixins import RolePermissionMixin
 from .models import MeetingRoom, MeetingRecord, RecordingTask, PlaybackFile, ClassNote
 from .serializers import (
-    MeetingRoomSerializer, MeetingRecordSerializer, 
+    MeetingRoomSerializer, MeetingRecordSerializer,
     RecordingTaskSerializer, PlaybackFileSerializer, ClassNoteSerializer
 )
 
@@ -32,7 +34,7 @@ class TencentMeetingService:
         }
 
 
-class MeetingRoomViewSet(viewsets.ModelViewSet):
+class MeetingRoomViewSet(RolePermissionMixin, viewsets.ModelViewSet):
     """会议室视图"""
     queryset = MeetingRoom.objects.select_related(
         'schedule',
@@ -43,49 +45,49 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
     serializer_class = MeetingRoomSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['status']
-    
+
     @action(detail=True, methods=['post'])
     def webrtc_signal(self, request, pk=None):
         """WebRTC信令交换"""
         meeting_room = self.get_object()
         if not self._can_access_meeting(request.user, meeting_room):
             return Response({'error': '无权限访问该会议室'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         signal = request.data.get('signal')
         if not signal:
             return Response({'error': '信令不能为空'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # 使用Redis存储信令
         from django.core.cache import cache
         room_id = f"webrtc:room:{meeting_room.id}:signals"
-        
+
         # 添加信令到队列
         signal_data = {
             'signal': signal,
             'sender': request.user.id,
             'timestamp': timezone.now().isoformat()
         }
-        
+
         # 使用Redis列表存储信令
         import json
         cache.rpush(room_id, json.dumps(signal_data))
-        
+
         # 限制队列大小
         cache.ltrim(room_id, -50, -1)
-        
+
         return Response({'status': 'ok'})
-    
+
     @action(detail=True, methods=['get'])
     def webrtc_signals(self, request, pk=None):
         """获取WebRTC信令"""
         meeting_room = self.get_object()
         if not self._can_access_meeting(request.user, meeting_room):
             return Response({'error': '无权限访问该会议室'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         # 使用Redis获取信令
         from django.core.cache import cache
         room_id = f"webrtc:room:{meeting_room.id}:signals"
-        
+
         # 获取所有信令
         signals_data = cache.lrange(room_id, 0, -1)
         signals = []
@@ -99,26 +101,12 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 print(f"解析信令失败: {e}")
                 pass
-        
+
         # 清除已读取的信令
         if len(signals) > 0:
             cache.delete(room_id)
-        
+
         return Response({'signals': signals})
-
-    def _get_user_phone(self, user):
-        return getattr(user, 'phone', None) or getattr(user, 'username', None)
-
-    def _get_role_codes(self, user):
-        return set(user.roles.values_list('code', flat=True))
-
-    def _get_role_names(self, user):
-        return set(user.roles.values_list('name', flat=True))
-
-    def _is_admin(self, user):
-        role_codes = self._get_role_codes(user)
-        role_names = self._get_role_names(user)
-        return user.is_superuser or 'admin' in role_codes or '管理员' in role_names
 
     def _is_teacher_of_schedule(self, user, schedule):
         return Teacher.objects.filter(id=schedule.teacher_id, phone=self._get_user_phone(user)).exists()
@@ -158,7 +146,7 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
         role_codes = self._get_role_codes(user)
         role_names = self._get_role_names(user)
         user_phone = self._get_user_phone(user)
-        filters = Q(pk__in=[])
+        filters = Q()
 
         if 'teacher' in role_codes or '教师' in role_names:
             filters |= Q(schedule__teacher__phone=user_phone)
@@ -292,38 +280,9 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
             )
 
         # 扣减课时
-        self.deduct_hours(meeting_room.schedule)
+        HoursService.deduct_hours(meeting_room.schedule)
 
         return Response(MeetingRoomSerializer(meeting_room).data)
-
-    def deduct_hours(self, schedule):
-        """扣减课时"""
-        class_students = schedule.edu_class.class_students.filter(status='studying')
-        for cs in class_students:
-            try:
-                account = StudentHoursAccount.objects.get(
-                    student=cs.student,
-                    course=schedule.course,
-                    status='active'
-                )
-                if HoursFlow.objects.filter(account=account, schedule=schedule, type='deduct').exists():
-                    continue
-                before = account.remaining_hours
-                account.used_hours += Decimal('1.0')
-                account.save()
-
-                HoursFlow.objects.create(
-                    account=account,
-                    schedule=schedule,
-                    type='deduct',
-                    hours=Decimal('1.0'),
-                    balance_before=before,
-                    balance_after=account.remaining_hours,
-                    note=f'上课扣课 - {schedule.date}',
-                    operator=None,
-                )
-            except StudentHoursAccount.DoesNotExist:
-                pass
 
 
 class MeetingRecordViewSet(viewsets.ModelViewSet):
@@ -351,7 +310,7 @@ class RecordingTaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ['meeting_room', 'status']
 
 
-class PlaybackFileViewSet(viewsets.ModelViewSet):
+class PlaybackFileViewSet(RolePermissionMixin, viewsets.ModelViewSet):
     """回放文件视图"""
     queryset = PlaybackFile.objects.select_related(
         'recording_task',
@@ -363,20 +322,6 @@ class PlaybackFileViewSet(viewsets.ModelViewSet):
     serializer_class = PlaybackFileSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['recording_task', 'status']
-
-    def _get_user_phone(self, user):
-        return getattr(user, 'phone', None) or getattr(user, 'username', None)
-
-    def _get_role_codes(self, user):
-        return set(user.roles.values_list('code', flat=True))
-
-    def _get_role_names(self, user):
-        return set(user.roles.values_list('name', flat=True))
-
-    def _is_admin(self, user):
-        role_codes = self._get_role_codes(user)
-        role_names = self._get_role_names(user)
-        return user.is_superuser or 'admin' in role_codes or '管理员' in role_names
 
     def _can_access_playback(self, playback, user):
         if playback.status != 'ready' or playback.view_permission == 'none':
@@ -415,7 +360,7 @@ class PlaybackFileViewSet(viewsets.ModelViewSet):
         user_phone = self._get_user_phone(user)
         role_codes = self._get_role_codes(user)
         role_names = self._get_role_names(user)
-        filters = Q(pk__in=[])
+        filters = Q()
 
         if 'teacher' in role_codes or '教师' in role_names:
             filters |= Q(

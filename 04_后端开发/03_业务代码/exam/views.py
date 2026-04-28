@@ -8,6 +8,7 @@ from django.db import transaction
 from .models import Question, Paper, Exam, ExamAnswer, ScoreRecord
 from .serializers import QuestionSerializer, PaperSerializer, ExamSerializer, ScoreRecordSerializer
 from edu.models import Student, Teacher, Subject
+from users.mixins import RolePermissionMixin
 
 
 
@@ -283,7 +284,7 @@ class PaperViewSet(viewsets.ModelViewSet):
     filterset_fields = ['subject', 'status']
 
 
-class ExamViewSet(viewsets.ModelViewSet):
+class ExamViewSet(RolePermissionMixin, viewsets.ModelViewSet):
     """考试管理视图"""
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
@@ -295,20 +296,6 @@ class ExamViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return super().get_permissions()
 
-    def _get_user_phone(self, user):
-        return getattr(user, 'phone', None) or getattr(user, 'username', None)
-
-    def _get_role_codes(self, user):
-        return set(user.roles.values_list('code', flat=True))
-
-    def _get_role_names(self, user):
-        return set(user.roles.values_list('name', flat=True))
-
-    def _is_admin(self, user):
-        role_codes = self._get_role_codes(user)
-        role_names = self._get_role_names(user)
-        return user.is_superuser or 'admin' in role_codes or '管理员' in role_names
-
     def get_queryset(self):
         queryset = Exam.objects.select_related('paper', 'edu_class').all().order_by('-start_time')
         user = getattr(self.request, 'user', None)
@@ -318,7 +305,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         user_phone = self._get_user_phone(user)
         role_codes = self._get_role_codes(user)
         role_names = self._get_role_names(user)
-        filters = Q(pk__in=[])
+        filters = Q()
 
         if 'teacher' in role_codes or '教师' in role_names:
             teacher_ids = Teacher.objects.filter(phone=user_phone).values_list('id', flat=True)
@@ -497,26 +484,12 @@ class ExamViewSet(viewsets.ModelViewSet):
         })
 
 
-class ScoreRecordViewSet(viewsets.ReadOnlyModelViewSet):
+class ScoreRecordViewSet(RolePermissionMixin, viewsets.ReadOnlyModelViewSet):
     """成绩记录视图"""
     queryset = ScoreRecord.objects.all()
     serializer_class = ScoreRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ['exam', 'student_id']
-
-    def _get_user_phone(self, user):
-        return getattr(user, 'phone', None) or getattr(user, 'username', None)
-
-    def _get_role_codes(self, user):
-        return set(user.roles.values_list('code', flat=True))
-
-    def _get_role_names(self, user):
-        return set(user.roles.values_list('name', flat=True))
-
-    def _is_admin(self, user):
-        role_codes = self._get_role_codes(user)
-        role_names = self._get_role_names(user)
-        return user.is_superuser or 'admin' in role_codes or '管理员' in role_names
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('exam', 'exam__edu_class', 'exam__edu_class__teacher')
@@ -528,7 +501,7 @@ class ScoreRecordViewSet(viewsets.ReadOnlyModelViewSet):
         user_phone = self._get_user_phone(user)
         role_codes = self._get_role_codes(user)
         role_names = self._get_role_names(user)
-        filters = Q(pk__in=[])
+        filters = Q()
 
         if 'teacher' in role_codes or '教师' in role_names:
             teacher_ids = Teacher.objects.filter(phone=user_phone).values_list('id', flat=True)
